@@ -35,7 +35,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service-config-ai:${BRANCH}-${COMMIT}-${RUN_ID}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service-config-ai:${{ env.BRANCH }}-${{ env.COMMIT }}-${{ env.RUN_ID }}
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
             GIT_COMMIT=${{ env.COMMIT }}
