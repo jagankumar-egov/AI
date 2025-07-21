@@ -22,8 +22,14 @@ COPY --from=builder /app/client/build ./client/build
 # Install server dependencies
 RUN cd server && npm install
 
-# Install Nginx
-RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+# ✅ Install Nginx in non-interactive mode
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
+    apt-get install -y \
+    -o Dpkg::Options::="--force-confdef" \
+    -o Dpkg::Options::="--force-confold" \
+    nginx && \
+    rm -rf /var/lib/apt/lists/*
 
 # Expose ports
 EXPOSE 80
