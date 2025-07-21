@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-config-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-config-ai
+  template:
+    metadata:
+      labels:
+        app: service-config-ai
+    spec:
+      containers:
+        - name: service-config-ai
+          image: jaganegov/service-config-ai:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-config-ai
+spec:
+  selector:
+    app: service-config-ai
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort  # Change to LoadBalancer if using cloud env
