@@ -21,10 +21,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Extract Git Info
+        id: gitinfo
+        run: |
+          echo "BRANCH=$(echo ${GITHUB_REF#refs/heads/} | sed 's/\//-/g')" >> $GITHUB_ENV
+          echo "COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "RUN_ID=${{ github.run_number }}" >> $GITHUB_ENV
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service-config-ai:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/service-config-ai:${BRANCH}-${COMMIT}-${RUN_ID}
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            GIT_COMMIT=${{ env.COMMIT }}
+            GIT_BRANCH=${{ env.BRANCH }}
+            RUN_ID=${{ env.RUN_ID }}
