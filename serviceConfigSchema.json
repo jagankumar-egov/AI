@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": ["moduleName", "serviceName", "forms", "workflow"],
+  "properties": {
+    "moduleName": { "type": "string" },
+    "serviceName": { "type": "string" },
+    "forms": { "type": "array" },
+    "workflow": { "type": "object" },
+    "billing": { "type": "object" }
+  }
+}
