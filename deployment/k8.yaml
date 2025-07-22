@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: service-config-ai
-          image: jaganegov/service-config-ai:latest
+          image: jaganegov/service-config-ai:main-5258e13-7
           ports:
             - containerPort: 80
 ---

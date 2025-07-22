@@ -1,20 +1,18 @@
 # Stage 1: Build React
-FROM --platform=linux/arm64 node:18 AS builder
+FROM node:18 AS builder
 WORKDIR /app
-
-# Copy and build client
 COPY client ./client
 RUN cd client && npm install && npm run build
 
 # Stage 2: Serve React + Run Node API
-FROM --platform=linux/arm64 node:18
+FROM node:18
 
 # Install PM2 globally
 RUN npm install -g pm2
 
 WORKDIR /app
 
-# Copy server and frontend build from builder
+# Copy server and built frontend
 COPY server ./server
 COPY serviceConfigSchema.json ./
 COPY ecosystem.config.js ./
@@ -33,8 +31,10 @@ RUN DEBIAN_FRONTEND=noninteractive \
     nginx && \
     rm -rf /var/lib/apt/lists/*
 
-# Expose HTTP port
+# Expose ports
 EXPOSE 80
 
-# Start Nginx + Node API using PM2
-CMD nginx && pm2 start ecosystem.config.js && pm2 logs
+# Make start.sh executable and use it as the entrypoint
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+CMD ["./start.sh"]
