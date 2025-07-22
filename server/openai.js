@@ -14,12 +14,12 @@ You are a configuration expert. Convert the following user instruction into a va
   "service": string,
   "fields": array,
   "idgen": array,
-  "documents": array,
+  "documents": array of objects (each object must include a 'module' field with the same value as the root 'module'),
   "workflow": object,
   "bill": object (optional)
 }
 
-All of the required fields (module, service, fields, workflow) must be present and non-empty. Use the user's instruction to fill in the values. Do not include any explanation or markdown, only return the raw JSON.
+All of the required fields (module, service, fields, workflow) must be present and non-empty. In the 'documents' array, each document object must include a 'module' field with the same value as the root 'module'. Use the user's instruction to fill in the values. Do not include any explanation or markdown, only return the raw JSON.
 
 User Instruction:
 ${userInput}
@@ -31,7 +31,20 @@ ${userInput}
     temperature: 0.2,
   });
 
-  const jsonOutput = res.choices[0].message.content;
+  let jsonOutput = res.choices[0].message.content;
   logger.info({ event: "openai-response", response: jsonOutput });
-  return jsonOutput.replace(/```json|```/g, "").trim();
+  jsonOutput = jsonOutput.replace(/```json|```/g, "").trim();
+
+  // Post-process to ensure each document's module matches root module
+  try {
+    const parsed = JSON.parse(jsonOutput);
+    if (parsed && parsed.module && Array.isArray(parsed.documents)) {
+      parsed.documents = parsed.documents.map(doc => ({ ...doc, module: parsed.module }));
+      console.log("Post-processed documents:", parsed);
+      return JSON.stringify(parsed);
+    }
+  } catch (e) {
+    logger.warn({ event: "openai-postprocess-error", error: e.message });
+  }
+  return jsonOutput;
 };

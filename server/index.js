@@ -48,6 +48,12 @@ app.post(
       const defaultConfigPath = path.join(__dirname, "assets", "servicConfig.json");
       const defaultConfig = JSON.parse(fs.readFileSync(defaultConfigPath, "utf-8"));
 
+
+      // Enrich default config's documents array with root module value
+      if (defaultConfig.module && Array.isArray(defaultConfig.documents)) {
+        defaultConfig.documents = defaultConfig.documents.map(doc => ({ ...doc, module: defaultConfig.module }));
+      }
+
       // Get OpenAI-generated partial config
       const { prompt } = req.body;
       const rawJson = await generateConfigFromPrompt(prompt);
