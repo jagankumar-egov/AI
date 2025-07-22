@@ -1,10 +1,33 @@
+require('dotenv').config(); // Load .env first
 const { OpenAI } = require("openai");
-const { log, Logger } = require("winston");
-require('dotenv').config();
-const logger = require("./logger");
-
+const logger = require("./logger"); // Make sure logger is set up
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+if (!process.env.OPENAI_API_KEY) {
+  logger.error("Missing OPENAI_API_KEY in environment. Please check your .env file.");
+  throw new Error("OPENAI_API_KEY not found.");
+}
+
+// 🔹 Chat assistant - for help / docs
+exports.chatAssist = async (prompt) => {
+  try {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.5,
+      max_tokens: 300,
+    });
+
+    const reply = res.choices[0].message.content.trim();
+    logger.info({ event: "chat-assist-reply", reply });
+    return reply;
+  } catch (err) {
+    logger.error({ event: "chat-assist-error", error: err.message });
+    throw err;
+  }
+};
+
+// 🔹 Config generator from NL prompt
 exports.generateConfigFromPrompt = async (userInput) => {
   const prompt = `
 You are a configuration expert. Convert the following user instruction into a valid JSON object that strictly matches this schema:
@@ -25,26 +48,32 @@ User Instruction:
 ${userInput}
 `;
 
-  const res = await openai.chat.completions.create({
-    model: "gpt-4",
-    messages: [{ role: "user", content: prompt }],
-    temperature: 0.2,
-  });
-
-  let jsonOutput = res.choices[0].message.content;
-  logger.info({ event: "openai-response", response: jsonOutput });
-  jsonOutput = jsonOutput.replace(/```json|```/g, "").trim();
-
-  // Post-process to ensure each document's module matches root module
   try {
-    const parsed = JSON.parse(jsonOutput);
+    const res = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.2,
+    });
+
+    let jsonOutput = res.choices[0].message.content;
+    logger.info({ event: "openai-response", response: jsonOutput });
+
+    // Clean markdown fences like ```json
+    jsonOutput = jsonOutput.replace(/```json|```/g, "").trim();
+
+    // Safe parse and patch `documents[].module`
+    let parsed = JSON.parse(jsonOutput);
     if (parsed && parsed.module && Array.isArray(parsed.documents)) {
-      parsed.documents = parsed.documents.map(doc => ({ ...doc, module: parsed.module }));
-      console.log("Post-processed documents:", parsed);
-      return JSON.stringify(parsed);
+      parsed.documents = parsed.documents.map((doc) => ({
+        ...doc,
+        module: parsed.module,
+      }));
+      logger.info({ event: "postprocess-documents", documents: parsed.documents });
     }
+
+    return JSON.stringify(parsed, null, 2);
   } catch (e) {
-    logger.warn({ event: "openai-postprocess-error", error: e.message });
+    logger.error({ event: "generate-config-error", error: e.message });
+    throw new Error("Failed to generate or parse config JSON.");
   }
-  return jsonOutput;
 };

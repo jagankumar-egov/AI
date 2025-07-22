@@ -78,4 +78,23 @@ app.post(
   }
 );
 
+// Chat assist endpoint (must be after app is initialized)
+app.post("/chat-assist", body("message").isString().trim().notEmpty(), async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: "Invalid message." });
+  }
+  try {
+    const { message } = req.body;
+    const openai = require("./openai");
+    // Use a more general prompt for chat assist
+    const prompt = `You are a helpful assistant for configuring service configs. Answer user questions, provide hints, and explain config concepts in simple terms.\n\nUser: ${message}`;
+    const response = await openai.chatAssist(prompt);
+    res.json({ reply: response });
+  } catch (err) {
+    logger.error({ event: "chat-assist-error", error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(5001, () => logger.info("Server running on http://localhost:5001"));
