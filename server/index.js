@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const { validateConfig } = require("./validate");
-const { generateConfigFromPrompt } = require("./openai");
+const { generateConfigFromPrompt,chatAssistInternal } = require("./openai");
 const fs = require("fs");
 const path = require("path");
 const _ = require("lodash");
@@ -174,7 +174,7 @@ app.post(
     const { sectionId, fieldId } = req.body;
     try {
       const prompt = `Provide three concise example values for the configuration field "${fieldId}" in the "${sectionId}" section. Return only a JSON array of values.`;
-      const reply = await openai.chatAssist(prompt);
+      const reply = await chatAssistInternal(prompt);
       let suggestions = [];
       try { suggestions = JSON.parse(reply); } catch {}
       res.json({ suggestions });

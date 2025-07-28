@@ -133,3 +133,15 @@
 {"level":"error","message":{"error":"Unexpected end of JSON input","event":"chat-assist-error"},"timestamp":"2025-07-23T09:01:36.184Z"}
 {"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:39:00.430Z"}
 {"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:42:55.297Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:46:54.817Z"}
+{"level":"error","message":{"error":"openai is not defined","event":"wizard-suggest-error"},"timestamp":"2025-07-28T09:47:01.962Z"}
+{"level":"error","message":{"error":"openai is not defined","event":"wizard-suggest-error"},"timestamp":"2025-07-28T09:47:25.567Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:50:33.223Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"history\"]"},"timestamp":"2025-07-28T09:50:44.243Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-28T09:54:10.777Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"computer_science\"]"},"timestamp":"2025-07-28T09:54:19.202Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"literature\"]"},"timestamp":"2025-07-28T09:55:31.867Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:56:05.194Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"login\", \"registration\", \"profile\"]"},"timestamp":"2025-07-28T09:56:19.685Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Web Hosting\", \"Software Development\"]"},"timestamp":"2025-07-28T09:56:28.388Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-28T09:56:37.210Z"}

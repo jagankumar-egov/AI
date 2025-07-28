@@ -8,12 +8,14 @@ import {
   DialogActions,
   Button,
   TextField,
-  Typography
+  Typography,
+  Box,
+  Chip
 } from '@mui/material';
 
 /**
  * A Material-UI dialog that drives a section-by-section service config wizard
- * via server endpoints /wizard/start, /wizard/next, /wizard/explain.
+ * via server endpoints /wizard/start, /wizard/next, /wizard/explain, /wizard/suggest.
  */
 export default function ConfigWizard({ open, onClose, onComplete }) {
   const [sectionId, setSectionId] = useState(null);
@@ -22,6 +24,7 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
   const [example, setExample] = useState(null);
   const [answers, setAnswers] = useState({});
   const [input, setInput] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
 
   // Initialize wizard: get first question for this section
   useEffect(() => {
@@ -34,6 +37,7 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
         setExample(res.data.example);
         setAnswers({});
         setInput('');
+        setSuggestions([]);
       })
       .catch(() => {});
   }, [open]);
@@ -62,6 +66,14 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
       .catch(() => {});
   };
 
+  // Fetch suggestions automatically when question/field changes
+  useEffect(() => {
+    if (!sectionId || !fieldId) return;
+    axios.post('http://localhost:5001/wizard/suggest', { sectionId, fieldId })
+      .then(res => setSuggestions(res.data.suggestions || []))
+      .catch(() => setSuggestions([]));
+  }, [sectionId, fieldId]);
+
   // Render dialog
 
   return (
@@ -82,11 +94,26 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
           onChange={e => setInput(e.target.value)}
           variant="outlined"
         />
+        {/* Suggestions as clickable chips */}
+        {suggestions.length > 0 && (
+          <Box sx={{ mt: 1, mb: 1 }}>
+            {suggestions.map(s => (
+              <Chip
+                key={s}
+                label={s}
+                onClick={() => setInput(s)}
+                sx={{ mr: 1, mb: 1 }}
+              />
+            ))}
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleExplain}>Help</Button>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleNext} variant="contained" disabled={!input.trim()}>Next</Button>
+        <Button onClick={handleNext} variant="contained" disabled={!input.trim()}>
+          Next
+        </Button>
       </DialogActions>
     </Dialog>
   );

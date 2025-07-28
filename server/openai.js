@@ -117,23 +117,23 @@ function extractRelevantSections(configJson, prompt) {
 
 
 // // 🔹 Chat assistant - for help / docs
-// exports.chatAssist = async (prompt) => {
-//   try {
-//     const res = await openai.chat.completions.create({
-//       model: "gpt-4",
-//       messages: [{ role: "user", content: prompt }],
-//       temperature: 0.5,
-//       max_tokens: 300,
-//     });
+exports.chatAssistInternal = async (prompt) => {
+  try {
+    const res = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.5,
+      max_tokens: 300,
+    });
 
-//     const reply = res.choices[0].message.content.trim();
-//     logger.info({ event: "chat-assist-reply", reply });
-//     return reply;
-//   } catch (err) {
-//     logger.error({ event: "chat-assist-error", error: err.message });
-//     throw err;
-//   }
-// };
+    const reply = res.choices[0].message.content.trim();
+    logger.info({ event: "chat-assist-reply", reply });
+    return reply;
+  } catch (err) {
+    logger.error({ event: "chat-assist-error", error: err.message });
+    throw err;
+  }
+};
 
 
 
