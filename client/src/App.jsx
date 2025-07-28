@@ -10,12 +10,15 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ChatIcon from '@mui/icons-material/Chat';
+import ConfigWizard from './components/ConfigWizard';
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function App() {
   const [input, setInput] = useState("");
   const [config, setConfig] = useState(null);
   const [error, setError] = useState(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardResults, setWizardResults] = useState({});
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
@@ -98,7 +101,7 @@ export default function App() {
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
           )}
-          {config && (
+      {config && (
             <Box mt={4}>
               <Typography variant="h6" fontWeight="medium" gutterBottom>
                 Generated Config
@@ -188,6 +191,30 @@ export default function App() {
             />
             <Button onClick={sendChat} disabled={chatLoading || !chatInput.trim()} variant="contained">Send</Button>
           </Box>
+        </Box>
+      )}
+      <Button
+        variant="contained"
+        color="secondary"
+        fullWidth
+        sx={{ mt: 4 }}
+        onClick={() => setWizardOpen(true)}
+      >
+        Start Config Wizard
+      </Button>
+      <ConfigWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onComplete={(sectionId, sectionConfig) => {
+          setWizardResults(prev => ({ ...prev, [sectionId]: sectionConfig }));
+        }}
+      />
+      {Object.keys(wizardResults).length > 0 && (
+        <Box mt={4} sx={{ p: 2, background: '#fafafa' }}>
+          <Typography variant="h6" gutterBottom>
+            Wizard Collected Config Sections
+          </Typography>
+          <ReactJson src={wizardResults} name={false} collapsed={false} displayDataTypes={false} />
         </Box>
       )}
     </>

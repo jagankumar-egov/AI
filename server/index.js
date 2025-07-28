@@ -97,4 +97,92 @@ app.post("/chat-assist", body("message").isString().trim().notEmpty(), async (re
   }
 });
 
+// 🎛️ Service configuration wizard endpoints
+const ServiceConfigHelper = require("./serviceConfigHelper");
+
+// List all wizard sections (sequence order)
+app.get(
+  "/wizard/sections",
+  async (_req, res) => {
+    try {
+      const helper = new ServiceConfigHelper();
+      res.json({ sections: Object.keys(helper.sections) });
+    } catch (err) {
+      logger.error({ event: "wizard-sections-error", error: err.message });
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Start the wizard: return first section prompt and example
+app.post(
+  "/wizard/start",
+  async (_req, res) => {
+    try {
+      const helper = new ServiceConfigHelper();
+      const sectionId = Object.keys(helper.sections)[0];
+      const next = helper.getNextPrompt(sectionId, {});
+      return res.json({ sectionId, id: next.id, question: next.question, example: next.example });
+    } catch (err) {
+      logger.error({ event: "wizard-start-error", error: err.message });
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Advance to next question or return section config when done
+app.post(
+  "/wizard/next",
+  async (req, res) => {
+    const { sectionId, answers } = req.body;
+    try {
+      const helper = new ServiceConfigHelper();
+      const next = helper.getNextPrompt(sectionId, answers || {});
+      if (next) {
+        return res.json({ sectionId, id: next.id, question: next.question, example: next.example });
+      }
+      // section completed: generate section config
+      const sectionConfig = helper.generateSectionConfig(sectionId, answers || {});
+      return res.json({ done: true, sectionConfig });
+    } catch (err) {
+      logger.error({ event: "wizard-next-error", error: err.message });
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Explain a section or provide hints
+app.post(
+  "/wizard/explain",
+  async (req, res) => {
+    const { sectionId } = req.body;
+    try {
+      const helper = new ServiceConfigHelper();
+      const explanation = helper.explainSection(sectionId);
+      res.json({ explanation });
+    } catch (err) {
+      logger.error({ event: "wizard-explain-error", error: err.message });
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
+// Suggest example values for a specific field via AI
+app.post(
+  "/wizard/suggest",
+  async (req, res) => {
+    const { sectionId, fieldId } = req.body;
+    try {
+      const prompt = `Provide three concise example values for the configuration field "${fieldId}" in the "${sectionId}" section. Return only a JSON array of values.`;
+      const reply = await openai.chatAssist(prompt);
+      let suggestions = [];
+      try { suggestions = JSON.parse(reply); } catch {}
+      res.json({ suggestions });
+    } catch (err) {
+      logger.error({ event: "wizard-suggest-error", error: err.message });
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+
 app.listen(5001, () => logger.info("Server running on http://localhost:5001"));
