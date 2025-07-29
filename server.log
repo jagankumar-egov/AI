@@ -1,0 +1,12 @@
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T09:12:03.078Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:12:03.121Z"}
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T09:15:05.973Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:15:06.017Z"}
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T10:03:59.301Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T10:03:59.345Z"}
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T10:05:57.219Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T10:05:57.266Z"}
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T11:31:16.084Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T11:31:16.129Z"}
+{"level":"warn","message":"Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.","timestamp":"2025-07-29T11:33:08.437Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T11:33:08.480Z"}

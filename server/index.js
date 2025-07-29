@@ -106,7 +106,16 @@ app.get(
   async (_req, res) => {
     try {
       const helper = new ServiceConfigHelper();
-      res.json({ sections: Object.keys(helper.sections) });
+      // Ensure 'basics' section always starts first, then the rest in defined order
+      const all = Object.keys(helper.sections);
+      // Ensure basics then workflow come first, followed by the remaining sections in their defined order
+      const sections = [
+        'basics',
+        'workflow',
+        ...all
+      ]
+        .filter((sec, idx, arr) => arr.indexOf(sec) === idx && all.includes(sec));
+      res.json({ sections });
     } catch (err) {
       logger.error({ event: "wizard-sections-error", error: err.message });
       res.status(500).json({ error: err.message });
@@ -122,7 +131,7 @@ app.post(
       const helper = new ServiceConfigHelper();
       const sectionId = Object.keys(helper.sections)[0];
       const next = helper.getNextPrompt(sectionId, {});
-      return res.json({ sectionId, id: next.id, question: next.question, example: next.example });
+      return res.json({ sectionId, id: next.id, question: next.question, example: next.example, type: next.type });
     } catch (err) {
       logger.error({ event: "wizard-start-error", error: err.message });
       res.status(500).json({ error: err.message });
@@ -139,7 +148,7 @@ app.post(
       const helper = new ServiceConfigHelper();
       const next = helper.getNextPrompt(sectionId, answers || {});
       if (next) {
-        return res.json({ sectionId, id: next.id, question: next.question, example: next.example });
+        return res.json({ sectionId, id: next.id, question: next.question, example: next.example, type: next.type });
       }
       // section completed: generate section config
       const sectionConfig = helper.generateSectionConfig(sectionId, answers || {});
@@ -185,4 +194,4 @@ app.post(
   }
 );
 
-app.listen(5001, () => logger.info("Server running on http://localhost:5001"));
+app.listen(5002, () => logger.info("Server running on http://localhost:5002"));

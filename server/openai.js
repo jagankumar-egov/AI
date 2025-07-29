@@ -6,11 +6,16 @@ require("dotenv").config();
 
 const { OpenAI } = require("openai");
 const { log } = require("console");
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
+let openai;
 if (!process.env.OPENAI_API_KEY) {
-  logger.error("Missing OPENAI_API_KEY in environment. Please check your .env file.");
-  throw new Error("OPENAI_API_KEY not found.");
+  logger.warn("Missing OPENAI_API_KEY in environment. OpenAI features will be disabled.");
+} else {
+  try {
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  } catch (e) {
+    logger.warn("Failed to initialize OpenAI client:", e.message);
+    openai = null;
+  }
 }
 
 const refusal = "Sorry, I can only answer questions related to the provided DIGIT Studio configuration.";
@@ -41,6 +46,9 @@ ${JSON.stringify(relevantContent, null, 2)}
 Always answer only based on this configuration.`;
 
     // Step 4: OpenAI Chat Completion Call
+    if (!openai) {
+      throw new Error("OpenAI client not configured.");
+    }
     const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [

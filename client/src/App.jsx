@@ -27,7 +27,7 @@ export default function App() {
 
   const generateConfig = async () => {
     try {
-      const res = await axios.post("http://localhost:5001/generate-config", { prompt: input });
+      const res = await axios.post("http://localhost:5002/generate-config", { prompt: input });
       setConfig(res.data.config);
       setError(null);
     } catch (err) {
@@ -53,20 +53,33 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-  const sendChat = async () => {
-    if (!chatInput.trim()) return;
-    setChatMessages((msgs) => [...msgs, { from: "user", text: chatInput }]);
-    setChatLoading(true);
-    try {
-      const res = await axios.post("http://localhost:5001/chat-assist", { message: chatInput });
-      setChatMessages((msgs) => [...msgs, { from: "ai", text: res.data.reply }]);
-    } catch (err) {
-      setChatMessages((msgs) => [...msgs, { from: "ai", text: "Sorry, I couldn't process your request." }]);
-    }
-    setChatInput("");
-    setChatLoading(false);
-    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-  };
+const sendChat = async () => {
+  const isString = typeof chatInput === "string";
+  const isNumber = typeof chatInput === "number";
+
+  if ((isString && !chatInput.trim()) || (!isString && !isNumber)) return;
+
+  const message = String(chatInput);
+  setChatMessages((msgs) => [...msgs, { from: "user", text: message }]);
+  setChatLoading(true);
+
+  try {
+    const res = await axios.post("http://localhost:5002/chat-assist", { message });
+    setChatMessages((msgs) => [...msgs, { from: "ai", text: res.data.reply }]);
+  } catch (err) {
+    setChatMessages((msgs) => [...msgs, { from: "ai", text: "Sorry, I couldn't process your request." }]);
+  }
+
+  setChatInput("");
+  setChatLoading(false);
+  setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+};
+
+          const isString = typeof chatInput === "string";
+  const isNumber = typeof chatInput === "number";
+  const disabled=(isString && !chatInput.trim()) || (!isString && !isNumber);
+
+
 
   return (
     <>
@@ -189,7 +202,7 @@ export default function App() {
               maxRows={3}
               disabled={chatLoading}
             />
-            <Button onClick={sendChat} disabled={chatLoading || !chatInput.trim()} variant="contained">Send</Button>
+            <Button onClick={sendChat} disabled={chatLoading || disabled} variant="contained">Send</Button>
           </Box>
         </Box>
       )}

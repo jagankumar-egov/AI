@@ -145,3 +145,168 @@
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[\"login\", \"registration\", \"profile\"]"},"timestamp":"2025-07-28T09:56:19.685Z"}
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Web Hosting\", \"Software Development\"]"},"timestamp":"2025-07-28T09:56:28.388Z"}
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-28T09:56:37.210Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T09:57:21.092Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"history\"]"},"timestamp":"2025-07-28T10:01:19.790Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"authentication\", \"database\", \"payment\"]"},"timestamp":"2025-07-28T10:01:32.155Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T10:02:59.183Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"computer_science\"]"},"timestamp":"2025-07-28T10:03:05.584Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email\", \"Database\", \"Web Hosting\"]"},"timestamp":"2025-07-28T10:03:09.824Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T10:03:13.203Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T10:03:17.975Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-28T10:03:19.530Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-28T10:03:54.892Z"}
+{"level":"error","message":{"error":"inputs.states.map is not a function","event":"wizard-next-error"},"timestamp":"2025-07-28T10:04:00.091Z"}
+{"level":"error","message":{"error":"inputs.states.map is not a function","event":"wizard-next-error"},"timestamp":"2025-07-28T10:04:12.580Z"}
+{"level":"error","message":{"error":"inputs.states.map is not a function","event":"wizard-next-error"},"timestamp":"2025-07-28T10:08:26.906Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T10:09:45.667Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"login\", \"registration\", \"dashboard\"]"},"timestamp":"2025-07-28T10:09:57.878Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email\", \"Web Hosting\", \"Database Management\"]"},"timestamp":"2025-07-28T10:10:01.970Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-28T10:10:04.635Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T10:10:30.149Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending\"\n]"},"timestamp":"2025-07-28T10:10:30.254Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-28T10:10:35.136Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T10:20:30.296Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"accounting\", \"human_resources\", \"inventory_management\"]"},"timestamp":"2025-07-28T10:35:13.625Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Technical Support\", \"Billing Support\"]"},"timestamp":"2025-07-28T10:35:30.144Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T10:35:35.597Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T10:35:39.494Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending\"\n]"},"timestamp":"2025-07-28T10:35:39.697Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Admin\",\n  \"Editor\",\n  \"Reviewer\"\n]"},"timestamp":"2025-07-28T10:35:51.999Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T11:22:08.859Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-28T11:22:14.981Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-28T11:22:23.845Z"}
+{"level":"error","message":{"error":"Cannot read properties of undefined (reading 'find')","event":"wizard-next-error"},"timestamp":"2025-07-28T11:22:25.842Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Financial Manager\",\n  \"Auditor\"\n]"},"timestamp":"2025-07-28T11:22:28.226Z"}
+{"level":"error","message":{"error":"Cannot read properties of undefined (reading 'find')","event":"wizard-next-error"},"timestamp":"2025-07-28T11:22:31.588Z"}
+{"level":"error","message":{"error":"Cannot read properties of undefined (reading 'find')","event":"wizard-next-error"},"timestamp":"2025-07-28T11:22:33.653Z"}
+{"level":"error","message":{"error":"Cannot read properties of undefined (reading 'find')","event":"wizard-next-error"},"timestamp":"2025-07-28T11:24:25.986Z"}
+{"level":"error","message":{"error":"Cannot read properties of undefined (reading 'find')","event":"wizard-next-error"},"timestamp":"2025-07-28T11:25:10.941Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Progress\",\n  \"Completed\"\n]"},"timestamp":"2025-07-28T11:43:19.106Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T11:43:22.856Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Approved\"\n]"},"timestamp":"2025-07-28T11:43:32.462Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-28T11:43:49.249Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Financial Manager\",\n  \"Billing Clerk\"\n]"},"timestamp":"2025-07-28T11:43:56.542Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-28T11:43:57.803Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"subscription\", \"one-time\", \"late\"]"},"timestamp":"2025-07-28T11:44:01.743Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[500, 1000, 1500]"},"timestamp":"2025-07-28T11:44:06.455Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending Approval\"\n]"},"timestamp":"2025-07-28T11:48:10.659Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-28T11:52:01.165Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"accounting\", \"human_resources\", \"inventory_management\"]"},"timestamp":"2025-07-28T11:52:08.997Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email\", \"Web Hosting\", \"Database Management\"]"},"timestamp":"2025-07-28T11:52:12.684Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-28T11:52:16.776Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Pending\",\n  \"In Progress\",\n  \"Completed\"\n]"},"timestamp":"2025-07-28T11:52:26.300Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-28T11:52:26.301Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Admin\",\n  \"Editor\",\n  \"Viewer\"\n]"},"timestamp":"2025-07-28T11:52:37.210Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-28T11:52:41.273Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Financial Manager\",\n  \"Billing Clerk\"\n]"},"timestamp":"2025-07-28T11:52:41.352Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"serviceCharge\", \"tax\", \"lateFee\"]"},"timestamp":"2025-07-28T11:52:44.938Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[250.75, 1500.00, 98.50]"},"timestamp":"2025-07-28T11:52:48.513Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"database\", \"user_interface\", \"security\"]"},"timestamp":"2025-07-29T04:11:13.005Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email Support\", \"Live Chat Support\", \"Phone Support\"]"},"timestamp":"2025-07-29T04:11:18.288Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T04:11:21.325Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T04:11:25.657Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T04:11:25.665Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T04:11:41.812Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Financial Manager\",\n  \"Auditor\"\n]"},"timestamp":"2025-07-29T04:11:43.724Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T04:11:44.972Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"serviceCharge\", \"tax\", \"lateFee\"]"},"timestamp":"2025-07-29T04:11:47.613Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[250.75, 500.00, 1000.25]"},"timestamp":"2025-07-29T04:11:50.200Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T04:28:51.180Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"login\", \"registration\", \"profile\"]"},"timestamp":"2025-07-29T04:28:58.533Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email\", \"Web Hosting\", \"Database Management\"]"},"timestamp":"2025-07-29T04:29:02.235Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T04:29:05.946Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"1\"]"},"timestamp":"2025-07-29T04:29:09.106Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T04:29:09.532Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T04:29:19.534Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"THC001\", \"THC002\", \"THC003\"]"},"timestamp":"2025-07-29T04:29:22.559Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"payer\",\n  \"receiver\",\n  \"administrator\"\n]"},"timestamp":"2025-07-29T04:29:23.178Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"subscription\", \"one-time\", \"transaction\"]"},"timestamp":"2025-07-29T04:29:29.221Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[500, 1000, 1500]"},"timestamp":"2025-07-29T04:29:33.871Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T08:28:45.213Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"math\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-29T08:31:31.572Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Technical Assistance\", \"Product Delivery\"]"},"timestamp":"2025-07-29T08:31:35.424Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"1\"]"},"timestamp":"2025-07-29T08:31:37.879Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T08:31:42.574Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending Approval\"\n]"},"timestamp":"2025-07-29T08:31:42.698Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T08:31:53.466Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"payer\",\n  \"payee\",\n  \"accountant\"\n]"},"timestamp":"2025-07-29T08:31:57.410Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"THC001\",\n  \"THC002\",\n  \"THC003\"\n]"},"timestamp":"2025-07-29T08:31:57.989Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"serviceCharge\", \"tax\", \"lateFee\"]"},"timestamp":"2025-07-29T08:32:01.470Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[150.00, 200.50, 350.75]"},"timestamp":"2025-07-29T08:32:05.116Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:12:50.044Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:12:55.061Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:13:03.294Z"}
+{"level":"info","message":"Server running on http://localhost:5001","timestamp":"2025-07-29T09:33:59.847Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T09:34:39.152Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"history\"]"},"timestamp":"2025-07-29T09:34:53.228Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Financial Consulting\", \"IT Solutions\"]"},"timestamp":"2025-07-29T09:34:57.148Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-29T09:35:01.501Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Pending\",\n  \"InProgress\",\n  \"Completed\"\n]"},"timestamp":"2025-07-29T09:35:05.504Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T09:35:05.506Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T09:35:11.681Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Billing Manager\",\n  \"Accountant\",\n  \"Finance Officer\"\n]"},"timestamp":"2025-07-29T09:35:15.527Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T09:35:15.547Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"monthly\", \"annual\", \"one-time\"]"},"timestamp":"2025-07-29T09:35:18.708Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[500, 1000, 1500]"},"timestamp":"2025-07-29T09:35:22.481Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"module1\", \"module2\", \"module3\"]"},"timestamp":"2025-07-29T09:37:36.713Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email Support\", \"Live Chat Support\", \"Phone Support\"]"},"timestamp":"2025-07-29T09:37:39.823Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T09:37:45.292Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T09:37:47.749Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T09:37:48.870Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T09:37:59.080Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Financial Manager\",\n  \"Auditor\"\n]"},"timestamp":"2025-07-29T09:38:01.388Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T09:38:01.479Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"subscription\", \"one-time\", \"transactional\"]"},"timestamp":"2025-07-29T09:38:05.233Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[1200, 2500, 5000]"},"timestamp":"2025-07-29T09:38:08.336Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"history\"]"},"timestamp":"2025-07-29T09:45:37.517Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-29T09:48:40.696Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-29T09:53:33.749Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T09:54:37.659Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-29T09:54:54.876Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Technical Assistance\", \"Product Delivery\"]"},"timestamp":"2025-07-29T09:54:58.917Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T09:55:04.547Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"1\"]"},"timestamp":"2025-07-29T09:55:07.752Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending\"\n]"},"timestamp":"2025-07-29T09:55:08.090Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T09:55:16.573Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T09:55:29.013Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"payer\",\n  \"recipient\",\n  \"accountant\"\n]"},"timestamp":"2025-07-29T09:55:29.999Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"monthly\", \"annual\", \"one-time\"]"},"timestamp":"2025-07-29T09:55:33.157Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[1200, 500, 350]"},"timestamp":"2025-07-29T09:55:38.465Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T09:55:41.437Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T09:56:15.067Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"userId\", \"transactionId\", \"productId\"]"},"timestamp":"2025-07-29T09:56:15.557Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"uuid\", \"increment\", \"random\"]"},"timestamp":"2025-07-29T09:56:18.978Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"54321\"]"},"timestamp":"2025-07-29T09:56:26.540Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"PDF\", \"DOCX\", \"JPEG\"]"},"timestamp":"2025-07-29T09:56:30.520Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"54321\"]"},"timestamp":"2025-07-29T09:56:31.208Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"1234AB\", \"5678CD\", \"9012EF\"]"},"timestamp":"2025-07-29T09:56:34.782Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"passport\", \"driver's license\", \"birth certificate\"]"},"timestamp":"2025-07-29T09:57:09.612Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"admin\",\n  \"editor\",\n  \"viewer\"\n]"},"timestamp":"2025-07-29T09:57:12.751Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"admin\", \"user\", \"guest\"]"},"timestamp":"2025-07-29T09:57:15.677Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\"type\": \"spam\", \"action\": \"delete\", \"sender\": \"unknown\"},\n  {\"type\": \"promotion\", \"action\": \"move to\", \"folder\": \"promotions\"},\n  {\"type\": \"social\", \"action\": \"move to\", \"folder\": \"social\"}\n]"},"timestamp":"2025-07-29T09:57:17.839Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\"name\": \"Sender\", \"width\": 200},\n  {\"name\": \"Subject\", \"width\": 300},\n  {\"name\": \"Date\", \"width\": 100}\n]"},"timestamp":"2025-07-29T09:57:20.662Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T11:49:32.230Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"authentication\", \"database\", \"user_interface\"]"},"timestamp":"2025-07-29T11:49:42.930Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Technical Support\", \"Billing Support\"]"},"timestamp":"2025-07-29T11:49:46.507Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T11:49:52.831Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T11:49:55.975Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T11:49:56.132Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T11:50:08.244Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"payer\",\n  \"receiver\",\n  \"accountant\"\n]"},"timestamp":"2025-07-29T11:50:11.322Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"THC001\",\n  \"THC002\",\n  \"THC003\"\n]"},"timestamp":"2025-07-29T11:50:11.324Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"monthly\", \"annual\", \"one-time\"]"},"timestamp":"2025-07-29T11:50:39.838Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[150.75, 2000.00, 35.99]"},"timestamp":"2025-07-29T11:57:08.502Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T11:57:12.155Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, true]"},"timestamp":"2025-07-29T11:57:16.983Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"userID\", \"customerID\", \"transactionID\"]"},"timestamp":"2025-07-29T11:57:16.984Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"uuid\", \"sequential\", \"random\"]"},"timestamp":"2025-07-29T11:57:20.217Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"112233\"]"},"timestamp":"2025-07-29T11:57:23.401Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"54321\"]"},"timestamp":"2025-07-29T11:57:26.749Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"doc123\", \"file789\", \"report456\"]"},"timestamp":"2025-07-29T11:57:27.037Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"PDF\", \"Word\", \"Excel\"]"},"timestamp":"2025-07-29T11:57:30.379Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T11:57:33.639Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"admin\",\n  \"editor\",\n  \"viewer\"\n]"},"timestamp":"2025-07-29T11:57:39.382Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"admin\", \"user\", \"moderator\"]"},"timestamp":"2025-07-29T11:57:42.647Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\n    \"name\": \"Work\",\n    \"conditions\": [\n      {\n        \"field\": \"to\",\n        \"value\": \"john@example.com\"\n      },\n      {\n        \"field\": \"subject\",\n        \"value\": \"Project\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Work folder\"\n    }\n  },\n  {\n    \"name\": \"Spam\",\n    \"conditions\": [\n      {\n        \"field\": \"from\",\n        \"value\": \"spam@example.com\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Spam folder\"\n    }\n  },\n  {\n    \"name\": \"Family\",\n    \"conditions\": [\n      {\n        \"field\": \"from\",\n        \"value\": \"mom@example.com\"\n      },\n      {\n        \"field\": \"subject\",\n        \"value\": \"Family\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Family folder\"\n    }\n  }\n]"},"timestamp":"2025-07-29T11:57:50.898Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\"name\": \"sender\", \"label\": \"Sender\", \"width\": \"20%\"},\n  {\"name\": \"subject\", \"label\": \"Subject\", \"width\": \"40%\"},\n  {\"name\": \"date\", \"label\": \"Date\", \"width\": \"20%\"}\n]"},"timestamp":"2025-07-29T11:57:51.055Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"ascending\", \"descending\", \"unsorted\"]"},"timestamp":"2025-07-29T11:57:52.128Z"}

@@ -18,42 +18,48 @@ import {
  * via server endpoints /wizard/start, /wizard/next, /wizard/explain, /wizard/suggest.
  */
 export default function ConfigWizard({ open, onClose, onComplete }) {
-  const [sectionId, setSectionId] = useState(null);
+  const [sections, setSections] = useState([]);
+  const [index, setIndex] = useState(0);
+  const [sectionId, setSectionId] = useState('');
   const [fieldId, setFieldId] = useState(null);
   const [question, setQuestion] = useState('');
   const [example, setExample] = useState(null);
-  const [answers, setAnswers] = useState({});
+  const [promptType, setPromptType] = useState('string');
+  const [answersMap, setAnswersMap] = useState({});
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState([]);
 
-  // Initialize wizard: get first question for this section
+  // Load section order on open
   useEffect(() => {
     if (!open) return;
-    axios.post('http://localhost:5001/wizard/start')
+    axios.get('http://localhost:5002/wizard/sections')
       .then(res => {
-        setSectionId(res.data.sectionId);
-        setFieldId(res.data.id);
-        setQuestion(res.data.question);
-        setExample(res.data.example);
-        setAnswers({});
-        setInput('');
-        setSuggestions([]);
+        const list = res.data.sections || [];
+        setSections(list);
+        setIndex(0);
+        setAnswersMap({});
       })
-      .catch(() => {});
+      .catch(() => setSections([]));
   }, [open]);
 
   const handleNext = () => {
-    const updated = { ...answers, [fieldId]: input };
-    axios.post('http://localhost:5001/wizard/next', { sectionId, answers: updated })
+    const updated = { ...(answersMap[sectionId] || {}), [fieldId]: input };
+    axios.post('http://localhost:5002/wizard/next', { sectionId, answers: updated })
       .then(res => {
         if (res.data.done) {
           onComplete(sectionId, res.data.sectionConfig);
-          onClose();
+          setAnswersMap(prev => ({ ...prev, [sectionId]: updated }));
+          if (index + 1 < sections.length) {
+            setIndex(idx => idx + 1);
+          } else {
+            onClose();
+          }
         } else {
-          setAnswers(updated);
+          setAnswersMap(prev => ({ ...prev, [sectionId]: updated }));
           setFieldId(res.data.id);
           setQuestion(res.data.question);
           setExample(res.data.example);
+          setPromptType(res.data.type || 'string');
           setInput('');
         }
       })
@@ -61,7 +67,7 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
   };
 
   const handleExplain = () => {
-    axios.post('http://localhost:5001/wizard/explain', { sectionId })
+    axios.post('http://localhost:5002/wizard/explain', { sectionId })
       .then(res => alert(res.data.explanation || ''))
       .catch(() => {});
   };
@@ -69,11 +75,34 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
   // Fetch suggestions automatically when question/field changes
   useEffect(() => {
     if (!sectionId || !fieldId) return;
-    axios.post('http://localhost:5001/wizard/suggest', { sectionId, fieldId })
+    axios.post('http://localhost:5002/wizard/suggest', { sectionId, fieldId })
       .then(res => setSuggestions(res.data.suggestions || []))
       .catch(() => setSuggestions([]));
   }, [sectionId, fieldId]);
 
+  // Load prompt when section or index changes
+  useEffect(() => {
+    if (!open || !sections.length) return;
+    const sid = sections[index];
+    setSectionId(sid);
+    setInput('');
+    setSuggestions([]);
+    axios.post('http://localhost:5002/wizard/next', { sectionId: sid, answers: {} })
+      .then(res => {
+        if (!res.data.done) {
+          setFieldId(res.data.id);
+          setQuestion(res.data.question);
+          setExample(res.data.example);
+          setPromptType(res.data.type || 'string');
+        }
+      })
+      .catch(() => {});
+  }, [open, sections, index]);
+
+
+            const isString = typeof input === "string";
+  const isNumber = typeof input === "number";
+  const disabled=(isString && !input.trim()) || (!isString && !isNumber);
   // Render dialog
 
   return (
@@ -88,11 +117,12 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
         )}
         <TextField
           fullWidth
-          multiline
-          minRows={1}
+          variant="outlined"
+          type={promptType === 'number' ? 'number' : 'text'}
+          multiline={promptType === 'array'}
+          minRows={promptType === 'array' ? 2 : 1}
           value={input}
           onChange={e => setInput(e.target.value)}
-          variant="outlined"
         />
         {/* Suggestions as clickable chips */}
         {suggestions.length > 0 && (
@@ -111,7 +141,8 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
       <DialogActions>
         <Button onClick={handleExplain}>Help</Button>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleNext} variant="contained" disabled={!input.trim()}>
+
+        <Button onClick={handleNext} variant="contained" disabled={disabled}>
           Next
         </Button>
       </DialogActions>
