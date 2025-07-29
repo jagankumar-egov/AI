@@ -10,15 +10,13 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import ChatIcon from '@mui/icons-material/Chat';
-import ConfigWizard from './components/ConfigWizard';
+import ConfigStepper from './pages/ConfigStepper';
 import CloseIcon from '@mui/icons-material/Close';
 
 export default function App() {
   const [input, setInput] = useState("");
   const [config, setConfig] = useState(null);
   const [error, setError] = useState(null);
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [wizardResults, setWizardResults] = useState({});
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
@@ -53,31 +51,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
-const sendChat = async () => {
-  const isString = typeof chatInput === "string";
-  const isNumber = typeof chatInput === "number";
-
-  if ((isString && !chatInput.trim()) || (!isString && !isNumber)) return;
-
-  const message = String(chatInput);
-  setChatMessages((msgs) => [...msgs, { from: "user", text: message }]);
-  setChatLoading(true);
-
-  try {
-    const res = await axios.post("http://localhost:5002/chat-assist", { message });
-    setChatMessages((msgs) => [...msgs, { from: "ai", text: res.data.reply }]);
-  } catch (err) {
-    setChatMessages((msgs) => [...msgs, { from: "ai", text: "Sorry, I couldn't process your request." }]);
-  }
-
-  setChatInput("");
-  setChatLoading(false);
-  setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-};
-
-          const isString = typeof chatInput === "string";
-  const isNumber = typeof chatInput === "number";
-  const disabled=(isString && !chatInput.trim()) || (!isString && !isNumber);
 
 
 
@@ -206,30 +179,7 @@ const sendChat = async () => {
           </Box>
         </Box>
       )}
-      <Button
-        variant="contained"
-        color="secondary"
-        fullWidth
-        sx={{ mt: 4 }}
-        onClick={() => setWizardOpen(true)}
-      >
-        Start Config Wizard
-      </Button>
-      <ConfigWizard
-        open={wizardOpen}
-        onClose={() => setWizardOpen(false)}
-        onComplete={(sectionId, sectionConfig) => {
-          setWizardResults(prev => ({ ...prev, [sectionId]: sectionConfig }));
-        }}
-      />
-      {Object.keys(wizardResults).length > 0 && (
-        <Box mt={4} sx={{ p: 2, background: '#fafafa' }}>
-          <Typography variant="h6" gutterBottom>
-            Wizard Collected Config Sections
-          </Typography>
-          <ReactJson src={wizardResults} name={false} collapsed={false} displayDataTypes={false} />
-        </Box>
-      )}
+      <ConfigStepper />
     </>
   );
 }

@@ -44,6 +44,8 @@ export default function ConfigWizard({ open, onClose, onComplete }) {
 
   const handleNext = () => {
     const updated = { ...(answersMap[sectionId] || {}), [fieldId]: input };
+    console.log(`Submitting answer for ${sectionId} - ${fieldId}:`, updated);
+    
     axios.post('http://localhost:5002/wizard/next', { sectionId, answers: updated })
       .then(res => {
         if (res.data.done) {

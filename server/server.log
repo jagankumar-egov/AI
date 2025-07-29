@@ -310,3 +310,61 @@
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\n    \"name\": \"Work\",\n    \"conditions\": [\n      {\n        \"field\": \"to\",\n        \"value\": \"john@example.com\"\n      },\n      {\n        \"field\": \"subject\",\n        \"value\": \"Project\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Work folder\"\n    }\n  },\n  {\n    \"name\": \"Spam\",\n    \"conditions\": [\n      {\n        \"field\": \"from\",\n        \"value\": \"spam@example.com\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Spam folder\"\n    }\n  },\n  {\n    \"name\": \"Family\",\n    \"conditions\": [\n      {\n        \"field\": \"from\",\n        \"value\": \"mom@example.com\"\n      },\n      {\n        \"field\": \"subject\",\n        \"value\": \"Family\"\n      }\n    ],\n    \"action\": {\n      \"moveTo\": \"Family folder\"\n    }\n  }\n]"},"timestamp":"2025-07-29T11:57:50.898Z"}
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\"name\": \"sender\", \"label\": \"Sender\", \"width\": \"20%\"},\n  {\"name\": \"subject\", \"label\": \"Subject\", \"width\": \"40%\"},\n  {\"name\": \"date\", \"label\": \"Date\", \"width\": \"20%\"}\n]"},"timestamp":"2025-07-29T11:57:51.055Z"}
 {"level":"info","message":{"event":"chat-assist-reply","reply":"[\"ascending\", \"descending\", \"unsorted\"]"},"timestamp":"2025-07-29T11:57:52.128Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"physics\", \"history\"]"},"timestamp":"2025-07-29T11:59:47.394Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Customer Support\", \"Software Development\", \"Marketing\"]"},"timestamp":"2025-07-29T11:59:51.740Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"undefined\"]"},"timestamp":"2025-07-29T11:59:54.495Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"1\"]"},"timestamp":"2025-07-29T11:59:57.752Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T12:00:00.846Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T12:00:09.609Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"payer\",\n  \"receiver\",\n  \"manager\"\n]"},"timestamp":"2025-07-29T12:00:17.436Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"THC001\", \"THC002\", \"THC003\"]"},"timestamp":"2025-07-29T12:00:18.125Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"serviceCharge\", \"lateFee\", \"processingFee\"]"},"timestamp":"2025-07-29T12:00:23.297Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[100, 250, 500]"},"timestamp":"2025-07-29T12:00:24.507Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, true]"},"timestamp":"2025-07-29T12:00:27.650Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:01:34.146Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"THC001\",\n  \"THC002\",\n  \"THC003\"\n]"},"timestamp":"2025-07-29T12:01:34.621Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:01:34.641Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"mathematics\", \"science\", \"history\"]"},"timestamp":"2025-07-29T12:01:34.751Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"math\", \"physics\", \"chemistry\"]"},"timestamp":"2025-07-29T12:01:38.674Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email Service\", \"Web Hosting\", \"Data Storage\"]"},"timestamp":"2025-07-29T12:01:42.837Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T12:01:44.028Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"1\"]"},"timestamp":"2025-07-29T12:01:45.704Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"In Progress\",\n  \"Completed\",\n  \"Pending\"\n]"},"timestamp":"2025-07-29T12:01:45.946Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T12:01:48.982Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Billing Manager\",\n  \"Finance Officer\"\n]"},"timestamp":"2025-07-29T12:01:53.076Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T12:01:53.140Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"serviceCharge\", \"lateFee\", \"tax\"]"},"timestamp":"2025-07-29T12:01:57.478Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[250.75, 500.00, 1000.25]"},"timestamp":"2025-07-29T12:01:59.398Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:02:00.888Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"userId\", \"customerId\", \"orderId\"]"},"timestamp":"2025-07-29T12:02:06.135Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:02:06.219Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"finance\", \"human_resources\", \"inventory_management\"]"},"timestamp":"2025-07-29T12:02:10.271Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"profileID\", \"userID\", \"accountID\"]"},"timestamp":"2025-07-29T12:02:11.101Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"Email\", \"Web Hosting\", \"Database Management\"]"},"timestamp":"2025-07-29T12:02:16.115Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T12:02:19.692Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"true\", \"false\", \"null\"]"},"timestamp":"2025-07-29T12:02:23.184Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Draft\",\n  \"In Review\",\n  \"Published\"\n]"},"timestamp":"2025-07-29T12:02:24.054Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Editor\",\n  \"Reviewer\",\n  \"Publisher\"\n]"},"timestamp":"2025-07-29T12:02:34.324Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"VAT\",\n  \"GST\",\n  \"CST\"\n]"},"timestamp":"2025-07-29T12:02:41.499Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"Accountant\",\n  \"Finance Manager\",\n  \"Billing Clerk\"\n]"},"timestamp":"2025-07-29T12:02:41.966Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"subscription\", \"one-time\", \"usage-based\"]"},"timestamp":"2025-07-29T12:02:48.688Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[250.00, 500.00, 1000.00]"},"timestamp":"2025-07-29T12:02:51.348Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:02:53.290Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, null]"},"timestamp":"2025-07-29T12:02:58.002Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"userId\", \"transactionId\", \"customerId\"]"},"timestamp":"2025-07-29T12:02:58.011Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"uuid\", \"increment\", \"random\"]"},"timestamp":"2025-07-29T12:03:01.361Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"54321\"]"},"timestamp":"2025-07-29T12:03:03.839Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"1234\", \"5678\", \"9012\"]"},"timestamp":"2025-07-29T12:03:06.504Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"12345\", \"67890\", \"54321\"]"},"timestamp":"2025-07-29T12:03:06.811Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"PDF\", \"DOCX\", \"TXT\"]"},"timestamp":"2025-07-29T12:03:13.207Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[true, false, false]"},"timestamp":"2025-07-29T12:03:16.464Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  \"admin\",\n  \"editor\",\n  \"viewer\"\n]"},"timestamp":"2025-07-29T12:03:19.616Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\"admin\", \"user\", \"moderator\"]"},"timestamp":"2025-07-29T12:03:29.959Z"}
+{"level":"info","message":{"event":"chat-assist-reply","reply":"[\n  {\"name\": \"Work\", \"rules\": [{\"field\": \"from\", \"value\": \"boss@example.com\"}]},\n  {\"name\": \"Family\", \"rules\": [{\"field\": \"from\", \"value\": \"mom@example.com\"}]},\n  {\"name\": \"Spam\", \"rules\": [{\"field\": \"subject\", \"value\": \"limited time offer\"}]}\n]"},"timestamp":"2025-07-29T12:03:33.430Z"}
+{"level":"info","message":{"body":{"prompt":""},"event":"generate-config"},"timestamp":"2025-07-29T14:10:09.012Z"}
+{"level":"warn","message":{"errors":[{"location":"body","msg":"Invalid value","path":"prompt","type":"field","value":""},{"location":"body","msg":"Invalid value","path":"prompt","type":"field","value":""}],"event":"validation-error"},"timestamp":"2025-07-29T14:10:09.013Z"}
+{"level":"info","message":{"body":{"prompt":"hi"},"event":"generate-config"},"timestamp":"2025-07-29T14:10:13.671Z"}
+{"level":"warn","message":{"errors":[{"location":"body","msg":"Invalid value","path":"prompt","type":"field","value":"hi"}],"event":"validation-error"},"timestamp":"2025-07-29T14:10:13.671Z"}
+{"level":"info","message":"Server running on http://localhost:5002","timestamp":"2025-07-29T14:10:34.759Z"}
+{"level":"info","message":{"body":{"prompt":""},"event":"generate-config"},"timestamp":"2025-07-29T14:10:49.687Z"}
+{"level":"warn","message":{"errors":[{"location":"body","msg":"Invalid value","path":"prompt","type":"field","value":""},{"location":"body","msg":"Invalid value","path":"prompt","type":"field","value":""}],"event":"validation-error"},"timestamp":"2025-07-29T14:10:49.688Z"}
