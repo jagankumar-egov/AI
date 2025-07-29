@@ -1,67 +1,65 @@
-## 🧠 Service Config Generator AI
-An AI-powered, stateless tool that transforms natural language input and structured prompts into modular serviceConfig.json files. Built for schema-driven applications with no persistent storage — everything is managed in-browser or passed via API.
+# 🧠 Service Config Generator AI
 
-## 🛠️ Generic Config Creator App & Service
-This project provides a configurable, extensible platform for generating, editing, validating, and exploring JSON-based configuration files. The system is modular, UI-driven, and powered by OpenAI with real-time schema validation.
+An AI-powered, **stateless tool** that transforms natural language input and structured prompts into modular `serviceConfig.json` files. Built for schema-driven applications with **no persistent storage** — everything is managed in-browser or passed via API.
 
-## 🎯 Goal
+# 🛠️ Generic Config Creator App & Service
+
+This project provides a configurable, extensible platform for generating, editing, validating, and exploring JSON-based configuration files. The system is **modular**, **UI-driven**, and powered by **OpenAI** with real-time schema validation.
+
+---
+
+## 🌟 Goal
+
 To enable teams to:
 
-## Create structured config files for services like workflow, billing, forms, and access control
+* Create structured config files for services like workflow, billing, forms, and access control
+* Interact with **schema-driven UI** or generate config from structured prompts
+* Validate config against **modular schemas**
+* Avoid persistent backend storage — everything is stored in **sessionStorage**
+* Export or integrate config with **external services** like GitHub or S3
 
-Interact with schema-driven UI or generate config from structured prompts
-
-Validate config against modular schemas
-
-Avoid persistent backend storage — browser session only
-
-Export or integrate config with external services when needed
+---
 
 ## 🧱 Core Components
-1. 🖥️ Frontend UI (React)
-Modular config section toggling
 
-Form-based and JSON-editor-based config editing
+### 1. 💻 Frontend UI (React + Material UI)
 
-OpenAI-powered generation via structured prompt UI
+* **Stepper-based UI**: each step represents one section of the config
+* Toggle config **sections** (modular)
+* Fill or edit config via:
 
-Live validation and preview
+  * JSON Schema-driven **form editor**
+  * **Monaco editor** for raw JSON
+* OpenAI-powered **structured prompt builder**
+* Live **validation and preview**
+* Export config as `.json`
+* Stores session data in `sessionStorage` (no server-side state)
 
-Exports config as .json
+### 2. ⚙️ Backend Service (Node.js / Express)
 
-Stores session data in sessionStorage (no server-side state)
+A **stateless proxy** API:
 
-## 2. ⚙️ Backend Service (Node.js / Express)
-Stateless API layer:
+* `POST /generate-config` — Convert structured user input into valid config
+* `POST /validate-config` — Validate config against schema
+* `GET /docs/:section` — Return section-specific schema docs & examples
+* `POST /external-service` (optional) — Send config to GitHub, S3, etc.
 
-POST /generate-config: Convert structured user input into config
+### 3. 🤖 OpenAI Integration
 
-POST /validate-config: Validate config against schema
+* Uses Chat Completions API to generate JSON config from **structured inputs**
+* Prompt driven by:
 
-GET /docs/:section: Fetch schema docs and generation examples per config section
+  * Schema metadata
+  * Section-specific examples
+* Stateless: Prompts and schema are passed in real-time; no history or memory retained
 
-POST /external-service (optional): Send final config to external destinations (e.g., GitHub, S3)
+---
 
-## 3. 🤖 OpenAI Integration
-Uses Chat Completions API to convert user-defined section inputs into config JSON
+## 📎 Modular Config Structure
 
-Driven by:
+Each `serviceConfig` file is composed of modular, optionally enabled sections:
 
-Modular schema descriptions
-
-Prompt-building templates
-
-Section examples
-
-Stateless: prompts passed inline, nothing stored
-
-## 🧩 Modular Config Structure
-The serviceConfig file is composed of multiple independent sections.
-
-Example serviceConfig.json
-js
-Copy
-Edit
+```json
 {
   "serviceName": "TradeLicense",
   "enabledSections": ["workflow", "form"],
@@ -91,34 +89,37 @@ Edit
         "label": "Mobile Number",
         "name": "mobileNumber",
         "type": "mobile",
-        "validation": {
-          "pattern": "^[0-9]{10}$"
-        }
+        "validation": { "pattern": "^[0-9]{10}$" }
       }
     ]
   }
 }
-## 🧬 Schema Structure
-Directory: config-schema/
+```
 
-pgsql
-Copy
-Edit
+---
+
+## 🧬 Schema Structure
+
+```
 config-schema/
-├── index.schema.json         # Main schema
+├── index.schema.json             # Main schema
 ├── workflow.schema.json
 ├── form.schema.json
 ├── billing.schema.json
 ├── accessControl.schema.json
-Each file defines a standalone schema for a section, used by both the UI and backend validator.
+```
+
+Each schema is standalone and used by both the form UI and backend validator.
+
+---
 
 ## 🔗 API Endpoints
-POST /generate-config
-Structured generation only — not plain-text prompts.
 
-json
-Copy
-Edit
+### `POST /generate-config`
+
+Structured prompt-to-config generation:
+
+```json
 {
   "section": "workflow",
   "details": {
@@ -126,51 +127,69 @@ Edit
       {
         "name": "DRAFT",
         "roles": ["CITIZEN"],
-        "actions": [{ "action": "SUBMIT", "nextState": "REVIEW" }]
+        "actions": [
+          { "action": "SUBMIT", "nextState": "REVIEW" }
+        ]
       }
     ]
   }
 }
-## ✅ Output: Valid JSON config for that section
+```
 
-POST /validate-config
-Validates any config object.
+### `POST /validate-config`
 
-json
-Copy
-Edit
+Validate a config file against a schema:
+
+```json
 {
   "config": { ... }
 }
-## ✅ Output:
+```
 
-json
-Copy
-Edit
-{ "valid": true, "errors": [] }
-GET /docs/:section
-Provides documentation, required fields, examples, and schema for each config section.
+Response:
 
-## ✅ Helps UI build structured prompts.
+```json
+{
+  "valid": true,
+  "errors": []
+}
+```
 
-POST /external-service (optional)
-Allows integration with third-party systems like GitHub, S3, or registries.
+### `GET /docs/:section`
+
+Returns:
+
+* Schema definition
+* Required fields
+* Example config snippets
+* Prompting instructions
+
+### `POST /external-service` (optional)
+
+Sends final validated config to:
+
+* GitHub (via PR or commit)
+* S3 bucket
+* Other API
+
+---
 
 ## 🧠 AI Prompt Logic
-Prompts are structured using:
 
-Section
+* Prompts are **structured**, not plain natural language
+* Inputs include:
 
-Field definitions
+  * Section name
+  * Field details
+  * Roles, states, actions, etc.
+  * Schema reference
+* Designed to guide LLM safely within schema rules
 
-Schema reference
+---
 
-No raw natural language — all inputs passed via form-driven or builder UI
+## 📂 Project Structure
 
-## 🗂 Sample Project Structure
-arduino
-Copy
-Edit
+```
 config-creator/
 ├── backend/
 │   └── routes/
@@ -183,47 +202,105 @@ config-creator/
 │       ├── components/
 │       ├── editors/
 │       ├── prompts/
-│       └── ...
+│       └── steppers/
 ├── config-schema/
 │   └── *.schema.json
 └── README.md
-🧪 Getting Started
-bash
-Copy
-Edit
-### Backend
-cd backend
-npm install
-npm run dev
+```
 
-### Frontend
-cd frontend
-npm install
-npm start
-🔐 Session Handling
-No backend storage
+---
 
-All user config is stored in sessionStorage in the browser
+## 🕹️ GitHub Actions
 
-Clears on tab/browser close
+CI/CD for Docker-based deployment:
 
-Can export final JSON config file
+```yaml
+name: Build & Deploy
 
-## 🧭 Roadmap
-Schema versioning support
+on: [push]
 
-Config diff viewer
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+      - name: Build Backend Image
+        run: docker build -t config-backend ./backend
+      - name: Build Frontend Image
+        run: docker build -t config-frontend ./frontend
+```
 
-Schema-aware prompt builder UI
+---
 
-Role-based access (per section)
+## 🔐 Session Handling
 
-GitHub integration (via external-service)
+* No database or file storage
+* Config lives in `sessionStorage` only
+* Reset on tab/browser close
+* Export as `.json` supported
 
-CLI for validation
+---
 
-📄 License
-MIT License — Built with ❤️ to simplify configuration in schema-driven platforms.
+## 🗺️ Roadmap
+
+* Schema version management
+* Diff viewer for config comparison
+* CLI for headless validation
+* GitHub/GitLab integration (via `POST /external-service`)
+* Access control per section
+
+---
+
+## ✅ Compatible With Any JSON Schema-Based System
+
+As long as:
+
+* Each section has a valid schema
+* Inputs are well-structured (not raw natural language)
+* Sections are modular and independently generatable
+
+This system can generate:
+
+* API test plans
+* CI/CD pipelines
+* ML model config
+* Form or UI layouts
+
+---
+
+## ❌ Limitations
+
+| Challenge                  | Mitigation                          |
+| -------------------------- | ----------------------------------- |
+| Cross-section dependencies | Generate as a whole or define links |
+| YAML-only config systems   | Convert to JSON                     |
+| Highly dynamic config      | Use plugins or helper fields        |
+| Large/complex schemas      | Provide schema UI hints             |
+
+---
+
+## 🔮 Summary
+
+| Feature                       | Supported |
+| ----------------------------- | --------- |
+| JSON-schema config generation | ✅         |
+| Stateless proxy backend       | ✅         |
+| Schema-based validation (AJV) | ✅         |
+| Config section docs explorer  | ✅         |
+| GitHub Actions integration    | ✅         |
+| YAML-only output              | ❌         |
+
+---
+
+## 📄 License
+
+**MIT License** — Built with ❤️ to simplify config generation for modern platforms.
+
+---
+
+Let me know if you want help adding more schema sections or a bootstrap for ML, CI/CD, or analytics config generators.
 
 
 
