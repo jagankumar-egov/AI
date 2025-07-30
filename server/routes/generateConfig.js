@@ -252,7 +252,7 @@ router.post('/ai-guided', async (req, res) => {
       config: parsedConfig,
       context: context,
       timestamp: new Date().toISOString(),
-      suggestions: generateNextStepSuggestions(section, context)
+      suggestions: generateNextStepSuggestions(section, context.completedSections, parsedConfig)
     });
 
   } catch (error) {
@@ -264,25 +264,50 @@ router.post('/ai-guided', async (req, res) => {
   }
 });
 
-// Generate suggestions for next steps
-function generateNextStepSuggestions(completedSection, context) {
+// Generate contextual suggestions for next steps
+function generateNextStepSuggestions(completedSection, completedSections, currentConfig) {
   const suggestions = [];
   
-  // Based on what was just configured, suggest next steps
-  if (completedSection === 'service' || completedSection === 'module') {
-    suggestions.push('Now let\'s configure the form fields for your service');
-    suggestions.push('We can set up the workflow states next');
-  }
+  // Get available sections dynamically
+  const { getAvailableSections } = require('../schemas');
   
-  if (completedSection === 'fields') {
-    suggestions.push('Great! Now let\'s create a workflow that matches your form fields');
-    suggestions.push('We can also set up validation rules for your fields');
-  }
-  
-  if (completedSection === 'workflow') {
-    suggestions.push('Perfect! Now let\'s configure the billing structure');
-    suggestions.push('We can set up access control roles next');
-  }
+  getAvailableSections().then(availableSections => {
+    // Find next section based on schema order
+    const currentIndex = availableSections.indexOf(completedSection);
+    if (currentIndex < availableSections.length - 1) {
+      const nextSection = availableSections[currentIndex + 1];
+      suggestions.push(`Now let's configure the ${nextSection} section`);
+    }
+    
+    // Generate contextual suggestions based on completed sections
+    if (completedSections.includes('module') || completedSections.includes('service')) {
+      suggestions.push('Now let\'s configure the form fields for your service');
+      suggestions.push('We can set up the workflow states next');
+    }
+    
+    if (completedSections.includes('fields')) {
+      suggestions.push('Great! Now let\'s create a workflow that matches your form fields');
+      suggestions.push('We can also set up validation rules for your fields');
+    }
+    
+    if (completedSections.includes('workflow')) {
+      suggestions.push('Perfect! Now let\'s configure the billing structure');
+    }
+    
+    // Add generic suggestions for remaining sections
+    const remainingSections = availableSections.filter(section => 
+      !completedSections.includes(section)
+    );
+    
+    if (remainingSections.length > 0) {
+      suggestions.push(`We can also configure: ${remainingSections.slice(0, 3).join(', ')}`);
+    }
+  }).catch(error => {
+    console.error('Error getting available sections:', error);
+    // Fallback suggestions
+    suggestions.push('Let\'s continue with the next section');
+    suggestions.push('We can configure additional sections as needed');
+  });
   
   return suggestions;
 }

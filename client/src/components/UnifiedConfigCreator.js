@@ -173,12 +173,11 @@ ${copyablePrompts.map((prompt, index) =>
 3. Paste it in the chat below
 4. I'll generate the configuration for you`;
             } else {
-              promptSection = `**💡 How to get started:**
+              promptSection = `**💡 How to configure:**
 1. Describe what you need in natural language
-2. I'll read schemas to understand requirements
-3. I'll ask for missing information
-4. I'll generate validated configurations
-5. We'll progress through all sections`;
+2. I'll read the schema to understand requirements
+3. I'll ask for missing information if needed
+4. I'll generate the configuration for you`;
             }
             
             return `Welcome to the Unified AI-Powered Config Creator! 🎉
@@ -193,7 +192,7 @@ ${aiGuidedInfo.sections?.slice(0, 5).map(section => `• ${section.label}`).join
 
 ${promptSection}
 
-**🎯 Example:** Try saying "I need a trade license service" or "Create a property tax system"
+**🎯 Examples:** Try saying "I need a [service_type] service" or "Create a [configuration_type] system"
 
 What type of configuration do you want to create?`;
           }
@@ -217,7 +216,7 @@ ${aiGuidedInfo.sections?.slice(0, 5).map(section => `• ${section.label}`).join
 4. I'll generate validated configurations
 5. We'll progress through all sections
 
-**🎯 Example:** Try saying "I need a trade license service" or "Create a property tax system"
+**🎯 Examples:** Try saying "I need a [service_type] service" or "Create a [configuration_type] system"
 
 What type of configuration do you want to create?`;
         }
@@ -423,25 +422,22 @@ Or ask for help to see what I can do!`,
       return 'I can help you configure your service. What would you like to set up?';
     }
     
-    switch (intent.type) {
-      case 'help':
-        return `I can help you configure your service! Here are some things you can ask me:
+    // Get examples from available sections
+    const availableSections = aiGuidedInfo.sections.slice(0, 5);
+    const sectionExamples = availableSections.map(section => 
+      `• Configure ${section.label.toLowerCase()}`
+    ).join('\n');
+    
+    return `I can help you configure your service! Here are some things you can ask me:
 
-**Configuration Sections:**
-${aiGuidedInfo.sections.map(section => 
-  `• **${section.label}**: "${section.description}"`
-).join('\n')}
+${sectionExamples}
 
-**Commands:**
-• "Show me the current configuration"
-• "What sections are available?"
-• "Help me with [specific section]"
+**💡 Examples:**
+• "I need a [service_type] service"
+• "Create a [section_name] configuration"
+• "Set up [specific_requirements]"
 
-Just describe what you need, and I'll generate the configuration for you!`;
-      
-      default:
-        return 'I can help you configure your service. What would you like to set up?';
-    }
+What would you like to configure?`;
   };
 
   const handleKeyPress = (e) => {

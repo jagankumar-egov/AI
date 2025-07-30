@@ -3,8 +3,9 @@ const path = require('path');
 
 // Schema configuration and metadata
 const SCHEMA_CONFIG = {
-  // Required sections based on the main schema
-  required: ["module", "service", "idgen","fields", "workflow","documents"],
+  // Required sections will be determined dynamically from schema files
+  // by checking which schemas have required: true or are marked as required
+  required: [], // Will be populated dynamically
   
   // Configurable section order (edit this array to change the order)
   order: [
@@ -405,20 +406,68 @@ async function getSectionSchema(sectionName) {
   }
 }
 
+// Helper function to get all available schema files
+async function getAvailableSchemas() {
+  const schemasDir = path.join(__dirname);
+  const files = await fs.readdir(schemasDir);
+  return files
+    .filter(file => file.endsWith('.json') && file !== 'index.json')
+    .map(file => file.replace('.json', ''));
+}
+
+// Helper function to determine if a section is required
+async function isSectionRequired(sectionName) {
+  try {
+    const schemaPath = path.join(__dirname, `${sectionName}.json`);
+    const schemaContent = await fs.readFile(schemaPath, 'utf8');
+    const schema = JSON.parse(schemaContent);
+    
+    // Check if schema has required: true or is marked as required
+    return schema.required === true || 
+           schema.required === 'true' || 
+           schema.isRequired === true ||
+           (schema.documentation && schema.documentation.required === true);
+  } catch (error) {
+    console.warn(`Could not determine if ${sectionName} is required:`, error.message);
+    return false;
+  }
+}
+
+// Helper function to get dynamic required sections
+async function getRequiredSections() {
+  const availableSchemas = await getAvailableSchemas();
+  const requiredSections = [];
+  
+  for (const schema of availableSchemas) {
+    if (await isSectionRequired(schema)) {
+      requiredSections.push(schema);
+    }
+  }
+  
+  return requiredSections;
+}
+
 // Get all available sections
-function getAvailableSections() {
-  return Object.keys(SCHEMA_CONFIG.sections).map(key => ({
-    name: key,
-    ...SCHEMA_CONFIG.sections[key]
-  }));
+async function getAvailableSections() {
+  const schemasDir = path.join(__dirname);
+  const files = await fs.readdir(schemasDir);
+  return files
+    .filter(file => file.endsWith('.json') && file !== 'index.json')
+    .map(file => file.replace('.json', ''));
 }
 
 // Get section order
-function getSectionOrder() {
-  return {
-    order: SCHEMA_CONFIG.order,
-    required: SCHEMA_CONFIG.required
-  };
+async function getSectionOrder() {
+  const availableSchemas = await getAvailableSections();
+  const requiredSections = await getRequiredSections();
+  
+  // Put required sections first, then others
+  const orderedSections = [
+    ...requiredSections,
+    ...availableSchemas.filter(section => !requiredSections.includes(section))
+  ];
+  
+  return orderedSections;
 }
 
 // Get section documentation
@@ -444,13 +493,28 @@ function getSectionPreConfigTemplate(sectionName) {
 }
 
 module.exports = {
-  SCHEMA_CONFIG,
-  loadMainSchema,
-  getSectionSchema,
-  getAvailableSections,
+  // Dynamic section management
+  getRequiredSections,
   getSectionOrder,
-  getSectionDocumentation,
+  getAvailableSchemas,
+  
+  // Legacy exports for backward compatibility
+  get SECTION_ORDER() {
+    return getSectionOrder();
+  },
+  
+  get REQUIRED_SECTIONS() {
+    return getRequiredSections();
+  },
+  
+  // Other exports remain the same
   getPreConfiguredSections,
   getSectionGenerationLogic,
-  getSectionPreConfigTemplate
+  getSectionPreConfigTemplate,
+  getSectionDocumentation,
+  getSectionSchema,
+  // getSectionGuidedQuestions,
+  // getSectionValidation,
+  // getSectionHelperText,
+  SCHEMA_CONFIG
 }; 

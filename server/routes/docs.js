@@ -111,34 +111,58 @@ async function getValidationForSection(section) {
 }
 
 // Centralized function to map section names to file names
-function getSectionFileName(sectionName) {
+async function getSectionFileName(sectionName) {
   const sectionNameLower = sectionName.toLowerCase();
   
-  // Map section names to file names
-  const sectionFileMap = {
+  // Get available schema files dynamically
+  const schemasDir = path.join(__dirname, '..', 'schemas');
+  const files = await fs.readdir(schemasDir);
+  const availableSchemas = files
+    .filter(file => file.endsWith('.json') && file !== 'index.json')
+    .map(file => file.replace('.json', ''));
+  
+  // Create dynamic mapping based on available schemas
+  const sectionFileMap = {};
+  availableSchemas.forEach(schema => {
+    // Handle common variations
+    const variations = [
+      schema,
+      schema.replace('_', ' '),
+      schema.replace('_', ''),
+      schema.toLowerCase(),
+      schema.replace(/([A-Z])/g, ' $1').trim().toLowerCase()
+    ];
+    
+    variations.forEach(variation => {
+      sectionFileMap[variation] = schema;
+    });
+  });
+  
+  // Add common aliases
+  const aliases = {
     'id generation': 'idgen',
     'business rules': 'rules',
     'access control': 'access',
-    'fields': 'fields',
-    'documents': 'documents',
-    'workflow': 'workflow',
     'billing': 'bill',
-    'payment': 'payment',
-    'calculator': 'calculator',
-    'applicant': 'applicant',
-    'boundary': 'boundary',
-    'localization': 'localization',
-    'notification': 'notification',
-    'module': 'module',
-    'service': 'service'
+    'payment gateway': 'payment',
+    'calculation': 'calculator',
+    'document requirements': 'documents',
+    'pdf generation': 'pdf',
+    'applicant configuration': 'applicant',
+    'geographic boundaries': 'boundary',
+    'localization settings': 'localization',
+    'notification settings': 'notification'
   };
+  
+  // Merge aliases with dynamic mapping
+  Object.assign(sectionFileMap, aliases);
   
   return sectionFileMap[sectionNameLower] || sectionNameLower;
 }
 
 // Function to get validation from schema file
 async function getSchemaValidation(section) {
-  const fileName = getSectionFileName(section.name);
+  const fileName = await getSectionFileName(section.name);
   
   try {
     const schemaPath = path.join(process.cwd(), 'schemas', `${fileName}.json`);
@@ -173,7 +197,7 @@ async function getSchemaValidation(section) {
 
 // Function to get specific object schema for each section
 async function getObjectSchema(section) {
-  const fileName = getSectionFileName(section.name);
+  const fileName = await getSectionFileName(section.name);
   
   try {
     // Try to load schema from individual schema file
@@ -570,7 +594,7 @@ router.get('/:section/examples', async (req, res) => {
 
 // Function to generate JSON from guided question answers
 async function generateJsonFromGuidedQuestions(fieldName, answers, questions) {
-  const fileName = getSectionFileName(fieldName);
+  const fileName = await getSectionFileName(fieldName);
   
   try {
     // Load schema from file
