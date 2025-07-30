@@ -35,7 +35,9 @@ const CreateConfig = () => {
     module: '',
     service: '',
     description: '',
-    category: 'government'
+    category: 'government',
+    businessService: '',
+    businessServiceSla: ''
   });
 
   // Fetch available sections for reference
@@ -69,20 +71,59 @@ const CreateConfig = () => {
       return;
     }
 
-    // Initialize the configuration with basic details
+    // Initialize the configuration with comprehensive details
     const initialConfig = {
       serviceName: formData.serviceName,
       module: formData.module,
       service: formData.service,
       description: formData.description,
-      category: formData.category
+      category: formData.category,
+      // Pre-configure some basic sections
+      workflow: {
+        business: formData.businessService || formData.service,
+        businessService: formData.serviceName,
+        businessServiceSla: formData.businessServiceSla ? parseInt(formData.businessServiceSla) : 72,
+        states: []
+      },
+      bill: {
+        BusinessService: formData.service,
+        taxHead: [],
+        taxPeriod: []
+      },
+      payment: {
+        gateway: "PAYTM"
+      },
+      access: {
+        roles: ["CITIZEN", "EMPLOYEE"],
+        permissions: {
+          "CITIZEN": ["CREATE", "VIEW"],
+          "EMPLOYEE": ["CREATE", "VIEW", "UPDATE", "DELETE"]
+        }
+      },
+      boundary: {
+        lowestLevel: "WARD",
+        hierarchyType: "ADMIN"
+      },
+      localization: {
+        language: "en_IN",
+        currency: "INR",
+        dateFormat: "DD/MM/YYYY"
+      },
+      notification: {
+        channels: ["SMS", "EMAIL"],
+        templates: {
+          "SUBMISSION": "Your application has been submitted successfully.",
+          "APPROVAL": "Your application has been approved.",
+          "REJECTION": "Your application has been rejected."
+        }
+      }
     };
 
     // Set the configuration in the store
     setConfig(initialConfig);
     setServiceName(formData.serviceName);
 
-    toast.success('Configuration created successfully!');
+    toast.success('Configuration created successfully! You can now configure individual sections.');
     
     // Navigate to the stepper to continue configuration
     navigate('/');
@@ -132,7 +173,7 @@ const CreateConfig = () => {
       ]
     },
     {
-      label: 'Category & Type',
+      label: 'Service Category',
       description: 'Select the category and type of service',
       fields: [
         {
@@ -145,9 +186,32 @@ const CreateConfig = () => {
             { value: 'utility', label: 'Utility Service' },
             { value: 'licensing', label: 'Licensing Service' },
             { value: 'certificate', label: 'Certificate Service' },
-            { value: 'tax', label: 'Tax Service' }
+            { value: 'tax', label: 'Tax Service' },
+            { value: 'health', label: 'Health Service' },
+            { value: 'education', label: 'Education Service' },
+            { value: 'transport', label: 'Transport Service' }
           ],
           helperText: 'Select the category that best describes your service'
+        }
+      ]
+    },
+    {
+      label: 'Initial Configuration',
+      description: 'Configure basic settings for your service',
+      fields: [
+        {
+          name: 'businessService',
+          label: 'Business Service',
+          type: 'text',
+          required: false,
+          helperText: 'Business service identifier (optional)'
+        },
+        {
+          name: 'businessServiceSla',
+          label: 'SLA (Hours)',
+          type: 'number',
+          required: false,
+          helperText: 'Service level agreement in hours (e.g., 72 for 3 days)'
         }
       ]
     }
@@ -173,6 +237,21 @@ const CreateConfig = () => {
             <FormHelperText>{field.helperText}</FormHelperText>
           )}
         </FormControl>
+      );
+    }
+
+    if (field.type === 'number') {
+      return (
+        <TextField
+          fullWidth
+          label={field.label}
+          value={formData[field.name] || ''}
+          onChange={handleInputChange(field.name)}
+          required={field.required}
+          type="number"
+          helperText={field.helperText}
+          variant="outlined"
+        />
       );
     }
 
@@ -246,16 +325,19 @@ const CreateConfig = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Required Sections
+                Pre-configured Sections
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                The following sections will be automatically enabled:
+                The following sections will be pre-configured:
               </Typography>
               <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-                <li>Module - Basic module information</li>
-                <li>Service - Service name and details</li>
-                <li>Fields - Form fields configuration</li>
-                <li>ID Generation - ID generation rules</li>
+                <li>Workflow - Basic workflow structure</li>
+                <li>Billing - Tax heads and periods</li>
+                <li>Payment - Payment gateway settings</li>
+                <li>Access Control - Role-based permissions</li>
+                <li>Boundary - Geographic boundaries</li>
+                <li>Localization - Language and currency</li>
+                <li>Notifications - SMS and email templates</li>
               </Box>
             </CardContent>
           </Card>
@@ -265,17 +347,19 @@ const CreateConfig = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Next Steps
+                Available Sections
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                After creating the configuration, you can:
+                You can configure these additional sections:
               </Typography>
               <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-                <li>Configure form fields and validation</li>
-                <li>Set up workflow states and transitions</li>
-                <li>Configure billing and payment settings</li>
-                <li>Add business rules and calculations</li>
-                <li>Export the final configuration</li>
+                <li>Fields - Form fields and validation</li>
+                <li>ID Generation - Unique ID patterns</li>
+                <li>Rules - Business rules and validation</li>
+                <li>Calculator - Fee calculation logic</li>
+                <li>Documents - Required document uploads</li>
+                <li>PDF - Certificate and receipt templates</li>
+                <li>Applicant - Applicant type configuration</li>
               </Box>
             </CardContent>
           </Card>
