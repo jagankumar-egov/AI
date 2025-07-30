@@ -1,0 +1,141 @@
+{
+  "type": "object",
+  "description": "Workflow states and state transitions",
+  "title": "Workflow Configuration",
+  "required": ["states"],
+  "properties": {
+    "states": {
+      "type": "array",
+      "description": "List of workflow states",
+      "items": {
+        "type": "object",
+        "required": ["state", "isStartState", "actions"],
+        "properties": {
+          "state": {
+            "type": "string",
+            "description": "State name"
+          },
+          "isStartState": {
+            "type": "boolean",
+            "description": "Whether this is the initial state"
+          },
+          "isStateUpdatable": {
+            "type": "boolean",
+            "description": "Whether the state can be updated"
+          },
+          "isTerminateState": {
+            "type": "boolean",
+            "description": "Whether this is a final state"
+          },
+          "docUploadRequired": {
+            "type": "boolean",
+            "description": "Whether document upload is required"
+          },
+          "sla": {
+            "type": "number",
+            "description": "Service level agreement in hours"
+          },
+          "actions": {
+            "type": "array",
+            "description": "Available actions in this state",
+            "items": {
+              "type": "object",
+              "required": ["action", "nextState", "roles"],
+              "properties": {
+                "action": {
+                  "type": "string",
+                  "description": "Action name"
+                },
+                "nextState": {
+                  "type": "string",
+                  "description": "Next state after action"
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Roles that can perform this action"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "business": {
+      "type": "string",
+      "description": "Business service identifier"
+    },
+    "businessService": {
+      "type": "string",
+      "description": "Business service name"
+    },
+    "businessServiceSla": {
+      "type": "number",
+      "description": "Business service SLA in hours"
+    },
+    "ACTIVE": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Active states list"
+    },
+    "INACTIVE": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Inactive states list"
+    }
+  },
+  "documentation": {
+    "description": "Defines the workflow states and transitions for the service. Controls the business process flow and user actions.",
+    "usage": "Configure workflow states, transitions, and business logic for the service. Define which roles can perform which actions.",
+    "stateTypes": {
+      "INITIATED": "Initial state when application is created",
+      "PENDING_VERIFICATION": "Waiting for verification",
+      "APPROVED": "Application approved",
+      "REJECTED": "Application rejected",
+      "CANCELLED": "Application cancelled"
+    },
+    "examples": [
+      {
+        "states": [
+          {
+            "state": "INITIATED",
+            "isStartState": true,
+            "isStateUpdatable": true,
+            "actions": [
+              {
+                "action": "SUBMIT",
+                "nextState": "PENDING_VERIFICATION",
+                "roles": ["CITIZEN"]
+              }
+            ]
+          },
+          {
+            "state": "PENDING_VERIFICATION",
+            "isStateUpdatable": false,
+            "actions": [
+              {
+                "action": "APPROVE",
+                "nextState": "APPROVED",
+                "roles": ["EMPLOYEE"]
+              },
+              {
+                "action": "REJECT",
+                "nextState": "REJECTED",
+                "roles": ["EMPLOYEE"]
+              }
+            ]
+          }
+        ],
+        "business": "TradeLicense",
+        "businessService": "Trade License",
+        "businessServiceSla": 72
+      }
+    ]
+  }
+} 

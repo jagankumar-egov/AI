@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "description": "Localization settings and translations",
+  "title": "Localization Configuration",
+  "properties": {
+    "language": {
+      "type": "string",
+      "description": "Primary language",
+      "default": "en_IN"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code",
+      "default": "INR"
+    },
+    "dateFormat": {
+      "type": "string",
+      "description": "Date format",
+      "default": "DD/MM/YYYY"
+    }
+  },
+  "documentation": {
+    "description": "Defines language settings, currency formats, and localization preferences.",
+    "usage": "Configure localization settings for the service.",
+    "examples": [
+      {
+        "language": "en_IN",
+        "currency": "INR",
+        "dateFormat": "DD/MM/YYYY"
+      }
+    ]
+  }
+} 

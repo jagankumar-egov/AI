@@ -1,0 +1,43 @@
+{
+  "type": "array",
+  "description": "PDF generation settings and templates",
+  "title": "PDF Generation Configuration",
+  "items": {
+    "type": "object",
+    "required": ["key", "type", "states"],
+    "properties": {
+      "key": {
+        "type": "string",
+        "description": "PDF template key"
+      },
+      "type": {
+        "type": "string",
+        "enum": ["certificate", "receipt", "application"],
+        "description": "PDF type"
+      },
+      "states": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "States where PDF is generated"
+      }
+    }
+  },
+  "documentation": {
+    "description": "Configures PDF generation for certificates, receipts, and other documents.",
+    "usage": "Define PDF templates and when they should be generated.",
+    "examples": [
+      {
+        "key": "certificate",
+        "type": "certificate",
+        "states": ["APPROVED"]
+      },
+      {
+        "key": "receipt",
+        "type": "receipt",
+        "states": ["PAYMENT_COMPLETED"]
+      }
+    ]
+  }
+} 

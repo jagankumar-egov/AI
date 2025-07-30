@@ -1,0 +1,36 @@
+{
+  "type": "object",
+  "description": "Payment gateway settings and configuration",
+  "title": "Payment Configuration",
+  "required": ["gateway"],
+  "properties": {
+    "gateway": {
+      "type": "string",
+      "description": "Payment gateway name",
+      "enum": ["PAYTM", "RAZORPAY", "STRIPE", "CASH", "CHEQUE"]
+    },
+    "merchantId": {
+      "type": "string",
+      "description": "Merchant identifier"
+    },
+    "merchantKey": {
+      "type": "string",
+      "description": "Merchant secret key"
+    },
+    "callbackUrl": {
+      "type": "string",
+      "description": "Payment callback URL"
+    }
+  },
+  "documentation": {
+    "description": "Defines payment gateway integration settings and merchant configurations.",
+    "usage": "Configure payment gateway settings for collecting payments.",
+    "examples": [
+      {
+        "gateway": "PAYTM",
+        "merchantId": "MERCHANT123",
+        "callbackUrl": "https://example.com/payment/callback"
+      }
+    ]
+  }
+} 

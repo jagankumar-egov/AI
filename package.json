@@ -1,0 +1,37 @@
+{
+  "name": "service-config-generator-ai",
+  "version": "1.0.0",
+  "description": "AI-powered service configuration generator with modular schema support",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm start",
+    "server:install": "cd server && npm install",
+    "client:install": "cd client && npm install",
+    "install:all": "npm run server:install && npm run client:install",
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "test": "npm run server:test && npm run client:test",
+    "server:test": "cd server && npm test",
+    "client:test": "cd client && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "service-config",
+    "ai",
+    "openai",
+    "json-schema",
+    "react",
+    "nodejs",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jagankumar-egov/AI.git"
+  }
+} 

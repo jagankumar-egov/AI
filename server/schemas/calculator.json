@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Calculation logic and formulas",
+  "title": "Calculator Configuration",
+  "properties": {
+    "formula": {
+      "type": "string",
+      "description": "Calculation formula"
+    },
+    "variables": {
+      "type": "object",
+      "description": "Formula variables"
+    }
+  },
+  "documentation": {
+    "description": "Configures calculation formulas and logic for fees, taxes, and other computations.",
+    "usage": "Define calculation formulas for fees and charges.",
+    "examples": [
+      {
+        "formula": "baseAmount * taxRate",
+        "variables": {
+          "baseAmount": "field.value",
+          "taxRate": 0.05
+        }
+      }
+    ]
+  }
+} 

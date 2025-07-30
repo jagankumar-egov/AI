@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "description": "ID generation rules and patterns",
+  "title": "ID Generation Configuration",
+  "required": ["format"],
+  "properties": {
+    "format": {
+      "type": "string",
+      "description": "ID generation format pattern",
+      "pattern": "^[A-Z0-9/{}]+$",
+      "examples": [
+        "TL/{YYYY}/{MM}/{DD}/{SEQUENCE}",
+        "PT/{YYYY}/{SEQUENCE}",
+        "WC/{YYYY}/{MM}/{SEQUENCE}"
+      ]
+    },
+    "sequence": {
+      "type": "string",
+      "description": "Starting sequence number",
+      "pattern": "^[0-9]+$",
+      "default": "0001"
+    },
+    "prefix": {
+      "type": "string",
+      "description": "Optional prefix for the ID",
+      "maxLength": 10
+    },
+    "suffix": {
+      "type": "string", 
+      "description": "Optional suffix for the ID",
+      "maxLength": 10
+    }
+  },
+  "documentation": {
+    "description": "Configures how unique identifiers are generated for service records. Supports various patterns and sequences.",
+    "usage": "Define the format pattern for generating unique IDs. Use placeholders like {YYYY}, {MM}, {DD}, {SEQUENCE} for dynamic values.",
+    "formatPlaceholders": {
+      "{YYYY}": "4-digit year",
+      "{YY}": "2-digit year", 
+      "{MM}": "2-digit month",
+      "{DD}": "2-digit day",
+      "{SEQUENCE}": "Auto-incrementing sequence number",
+      "{RANDOM}": "Random alphanumeric string"
+    },
+    "examples": [
+      {
+        "format": "TL/{YYYY}/{MM}/{DD}/{SEQUENCE}",
+        "sequence": "0001",
+        "description": "Trade License ID with date and sequence"
+      },
+      {
+        "format": "PT/{YYYY}/{SEQUENCE}",
+        "sequence": "0001", 
+        "description": "Property Tax ID with year and sequence"
+      },
+      {
+        "format": "WC/{YYYY}/{MM}/{SEQUENCE}",
+        "sequence": "0001",
+        "description": "Water Charge ID with year, month and sequence"
+      }
+    ]
+  }
+} 

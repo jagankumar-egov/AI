@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "description": "Document requirements and upload settings",
+  "title": "Documents Configuration",
+  "properties": {
+    "required": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Document name"
+          },
+          "label": {
+            "type": "string",
+            "description": "Display label"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["file", "image", "pdf"],
+            "description": "Document type"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether document is required"
+          }
+        }
+      }
+    }
+  },
+  "documentation": {
+    "description": "Defines required documents, file types, and upload configurations for the service.",
+    "usage": "Configure required documents for the service application.",
+    "examples": [
+      {
+        "required": [
+          {
+            "name": "identityProof",
+            "label": "Identity Proof",
+            "type": "file",
+            "required": true
+          },
+          {
+            "name": "addressProof",
+            "label": "Address Proof",
+            "type": "file",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+} 

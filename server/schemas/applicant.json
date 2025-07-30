@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "description": "Applicant configuration and details",
+  "title": "Applicant Configuration",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["INDIVIDUAL", "ORGANIZATION"],
+      "description": "Applicant type"
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required applicant fields"
+    }
+  },
+  "documentation": {
+    "description": "Defines applicant types and required applicant information fields.",
+    "usage": "Configure applicant types and required fields.",
+    "examples": [
+      {
+        "type": "INDIVIDUAL",
+        "fields": ["name", "mobile", "email", "address"]
+      },
+      {
+        "type": "ORGANIZATION",
+        "fields": ["organizationName", "contactPerson", "mobile", "email", "address"]
+      }
+    ]
+  }
+} 

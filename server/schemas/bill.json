@@ -1,0 +1,137 @@
+{
+  "type": "object",
+  "description": "Billing configuration and tax heads",
+  "title": "Billing Configuration",
+  "required": ["taxHead", "taxPeriod", "BusinessService"],
+  "properties": {
+    "taxHead": {
+      "type": "array",
+      "description": "Tax heads configuration",
+      "items": {
+        "type": "object",
+        "required": ["code", "name", "order", "isDebit", "service", "category", "isRequired", "isActualDemand"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Tax head code"
+          },
+          "name": {
+            "type": "string",
+            "description": "Tax head name"
+          },
+          "order": {
+            "type": "string",
+            "description": "Display order"
+          },
+          "isDebit": {
+            "type": "boolean",
+            "description": "Whether this is a debit entry"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service identifier"
+          },
+          "category": {
+            "type": "string",
+            "description": "Tax category"
+          },
+          "isRequired": {
+            "type": "boolean",
+            "description": "Whether this tax head is required"
+          },
+          "isActualDemand": {
+            "type": "boolean",
+            "description": "Whether this is actual demand"
+          }
+        }
+      }
+    },
+    "taxPeriod": {
+      "type": "array",
+      "description": "Tax period configuration",
+      "items": {
+        "type": "object",
+        "required": ["code", "toDate", "service", "fromDate", "periodCycle", "financialYear"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Period code"
+          },
+          "toDate": {
+            "type": "string",
+            "format": "date",
+            "description": "End date"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service identifier"
+          },
+          "fromDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date"
+          },
+          "periodCycle": {
+            "type": "string",
+            "description": "Period cycle (MONTHLY, YEARLY, etc.)"
+          },
+          "financialYear": {
+            "type": "string",
+            "description": "Financial year"
+          }
+        }
+      }
+    },
+    "BusinessService": {
+      "type": "string",
+      "description": "Business service identifier"
+    }
+  },
+  "documentation": {
+    "description": "Configures billing components including tax heads, payment periods, and business services.",
+    "usage": "Define tax heads, payment periods, and billing rules for the service. Configure how charges are calculated and collected.",
+    "taxHeadTypes": {
+      "FEE": "Service fees",
+      "TAX": "Government taxes",
+      "PENALTY": "Late payment penalties",
+      "REBATE": "Discounts and rebates"
+    },
+    "examples": [
+      {
+        "taxHead": [
+          {
+            "code": "TL_FEE",
+            "name": "Trade License Fee",
+            "order": "1",
+            "isDebit": true,
+            "service": "TradeLicense",
+            "category": "FEE",
+            "isRequired": true,
+            "isActualDemand": true
+          },
+          {
+            "code": "TL_TAX",
+            "name": "Trade License Tax",
+            "order": "2",
+            "isDebit": true,
+            "service": "TradeLicense",
+            "category": "TAX",
+            "isRequired": true,
+            "isActualDemand": true
+          }
+        ],
+        "taxPeriod": [
+          {
+            "code": "FY2024",
+            "toDate": "2024-03-31",
+            "service": "TradeLicense",
+            "fromDate": "2024-04-01",
+            "periodCycle": "YEARLY",
+            "financialYear": "2024-25"
+          }
+        ],
+        "BusinessService": "TradeLicense"
+      }
+    ]
+  }
+} 

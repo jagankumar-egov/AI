@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "description": "Geographic boundaries and jurisdiction",
+  "title": "Boundary Configuration",
+  "required": ["lowestLevel", "hierarchyType"],
+  "properties": {
+    "lowestLevel": {
+      "type": "string",
+      "enum": ["WARD", "VILLAGE", "CITY", "DISTRICT"],
+      "description": "Lowest administrative level"
+    },
+    "hierarchyType": {
+      "type": "string",
+      "enum": ["ADMIN", "REVENUE"],
+      "description": "Hierarchy type"
+    }
+  },
+  "documentation": {
+    "description": "Configures geographic boundaries, jurisdiction levels, and administrative hierarchies.",
+    "usage": "Define administrative boundaries and jurisdiction levels.",
+    "examples": [
+      {
+        "lowestLevel": "WARD",
+        "hierarchyType": "ADMIN"
+      }
+    ]
+  }
+} 

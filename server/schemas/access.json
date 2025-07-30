@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "description": "Access control and role-based permissions",
+  "title": "Access Control Configuration",
+  "properties": {
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available roles"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Role-based permissions",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "documentation": {
+    "description": "Configures role-based access control and permissions for different user types.",
+    "usage": "Define roles and their permissions for the service.",
+    "examples": [
+      {
+        "roles": ["CITIZEN", "EMPLOYEE", "ADMIN"],
+        "permissions": {
+          "CITIZEN": ["CREATE", "VIEW"],
+          "EMPLOYEE": ["CREATE", "VIEW", "UPDATE", "DELETE"],
+          "ADMIN": ["CREATE", "VIEW", "UPDATE", "DELETE", "APPROVE"]
+        }
+      }
+    ]
+  }
+} 

@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "description": "Business rules and validation logic",
+  "title": "Business Rules Configuration",
+  "properties": {
+    "validation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Field name"
+          },
+          "rule": {
+            "type": "string",
+            "enum": ["MIN", "MAX", "PATTERN", "REQUIRED", "CUSTOM"]
+          },
+          "value": {
+            "description": "Rule value"
+          }
+        }
+      }
+    }
+  },
+  "documentation": {
+    "description": "Defines business rules, validation logic, and custom calculations for the service.",
+    "usage": "Configure validation rules and business logic for the service.",
+    "examples": [
+      {
+        "validation": [
+          {
+            "field": "age",
+            "rule": "MIN",
+            "value": 18
+          },
+          {
+            "field": "email",
+            "rule": "PATTERN",
+            "value": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+          }
+        ]
+      }
+    ]
+  }
+} 

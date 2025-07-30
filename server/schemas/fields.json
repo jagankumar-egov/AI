@@ -1,0 +1,90 @@
+{
+  "type": "array",
+  "description": "Form fields configuration and validation rules",
+  "title": "Fields Configuration",
+  "items": {
+    "type": "object",
+    "required": ["name", "label", "type"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "Unique field identifier",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "label": {
+        "type": "string",
+        "description": "Display label for the field"
+      },
+      "type": {
+        "type": "string",
+        "enum": ["text", "number", "email", "phone", "date", "select", "multiselect", "file", "textarea"],
+        "description": "Field input type"
+      },
+      "required": {
+        "type": "boolean",
+        "default": false,
+        "description": "Whether the field is mandatory"
+      },
+      "validation": {
+        "type": "object",
+        "properties": {
+          "minLength": { "type": "number" },
+          "maxLength": { "type": "number" },
+          "pattern": { "type": "string" },
+          "min": { "type": "number" },
+          "max": { "type": "number" }
+        }
+      },
+      "options": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "value": { "type": "string" },
+            "label": { "type": "string" }
+          }
+        },
+        "description": "Options for select/multiselect fields"
+      }
+    }
+  },
+  "minItems": 1,
+  "documentation": {
+    "description": "Defines the form fields that will be displayed to users. Each field can have validation rules, display properties, and data types.",
+    "usage": "Configure all the form fields that users will interact with. Include validation rules and display properties for each field.",
+    "fieldTypes": {
+      "text": "Single line text input",
+      "number": "Numeric input",
+      "email": "Email address input with validation",
+      "phone": "Phone number input",
+      "date": "Date picker",
+      "select": "Dropdown selection",
+      "multiselect": "Multiple selection dropdown",
+      "file": "File upload",
+      "textarea": "Multi-line text input"
+    },
+    "examples": [
+      {
+        "name": "applicantName",
+        "label": "Applicant Name",
+        "type": "text",
+        "required": true,
+        "validation": {
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      {
+        "name": "businessType",
+        "label": "Business Type",
+        "type": "select",
+        "required": true,
+        "options": [
+          { "value": "retail", "label": "Retail" },
+          { "value": "wholesale", "label": "Wholesale" },
+          { "value": "manufacturing", "label": "Manufacturing" }
+        ]
+      }
+    ]
+  }
+} 
