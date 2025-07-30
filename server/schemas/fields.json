@@ -49,6 +49,37 @@
     }
   },
   "minItems": 1,
+  "guidedQuestions": [
+    {
+      "id": "fieldCount",
+      "question": "How many form fields do you need?",
+      "type": "number",
+      "placeholder": "Enter number of fields"
+    },
+    {
+      "id": "fieldTypes",
+      "question": "What types of fields do you need?",
+      "type": "multiSelect",
+      "suggestions": ["text", "number", "select", "date", "file", "textarea"],
+      "placeholder": "Select field types"
+    },
+    {
+      "id": "fieldNames",
+      "question": "What are the names of your fields?",
+      "type": "textArray",
+      "placeholder": "Enter field names separated by commas"
+    }
+  ],
+  "generationLogic": {
+    "type": "array",
+    "description": "Generate array of field objects from guided question answers",
+    "logic": {
+      "fieldCount": "number of fields to generate",
+      "fieldNames": "comma-separated field names",
+      "fieldTypes": "array of field types",
+      "output": "Array of field objects with name, label, type, required properties"
+    }
+  },
   "documentation": {
     "description": "Defines the form fields that will be displayed to users. Each field can have validation rules, display properties, and data types.",
     "usage": "Configure all the form fields that users will interact with. Include validation rules and display properties for each field.",

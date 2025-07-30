@@ -14,51 +14,19 @@ const router = express.Router();
 let docsCache = {};
 
 // Function to generate creation steps dynamically based on schema
-function generateCreationSteps(sections, requiredSections) {
+async function generateCreationSteps(sections, requiredSections) {
   const steps = [];
   
-  // Step 1: Basic Information (always present)
-  steps.push({
-    label: 'Basic Information',
-    description: 'Enter the basic details for your service configuration',
-    fields: [
-      {
-        name: 'serviceName',
-        label: 'Service Name',
-        type: 'text',
-        required: true,
-        helperText: 'Enter a unique name for your service (e.g., Trade License, Property Tax)',
-        validation: {
-          minLength: 3,
-          maxLength: 100,
-          pattern: '^[a-zA-Z0-9\\s\\-_\\.]+$'
-        }
-      },
-      {
-        name: 'description',
-        label: 'Description',
-        type: 'text',
-        required: false,
-        multiline: true,
-        rows: 3,
-        helperText: 'Brief description of what this service does',
-        validation: {
-          maxLength: 500
-        }
-      }
-    ]
-  });
-
-  // Step 2: Required Schema Fields
+  // Step 1: Required Schema Fields (from schema)
   const requiredFields = [];
-  const requiredSectionNames = ['module', 'service'];
   
-  requiredSectionNames.forEach(sectionName => {
+  // Get all required sections from schema
+  for (const sectionName of requiredSections) {
     // Find section by name (case-insensitive)
     const section = sections.find(s => s.name.toLowerCase() === sectionName.toLowerCase());
     if (section) {
-      const fieldType = section.type === 'string' ? 'text' : 'text';
-      const validation = getValidationForSection(section);
+      const fieldType = getFieldTypeForSection(section);
+      const validation = await getValidationForSection(section);
       
       requiredFields.push({
         name: sectionName,
@@ -69,7 +37,7 @@ function generateCreationSteps(sections, requiredSections) {
         validation: validation
       });
     }
-  });
+  }
 
   if (requiredFields.length > 0) {
     steps.push({
@@ -79,66 +47,47 @@ function generateCreationSteps(sections, requiredSections) {
     });
   }
 
-  // Step 3: Optional Schema Fields
+  // Step 2: Optional Schema Fields (from schema)
   const optionalFields = [];
-  const optionalSectionNames = ['idgen', 'fields'];
   
-  optionalSectionNames.forEach(sectionName => {
-    // Find section by name (case-insensitive)
-    const section = sections.find(s => s.name.toLowerCase() === sectionName.toLowerCase());
-    if (section) {
-      const fieldType = getFieldTypeForSection(section);
-      const validation = getValidationForSection(section);
-      
-      optionalFields.push({
-        name: sectionName,
-        label: section.name,
-        type: fieldType,
-        required: section.required || false,
-        helperText: section.documentation || `Configure ${section.name}`,
-        validation: validation
-      });
-    }
+  // Get all non-required sections that can be configured initially
+  const optionalSections = sections.filter(section => {
+    const sectionNameLower = section.name.toLowerCase();
+    return !requiredSections.includes(sectionNameLower) && 
+           (section.type === 'string' || section.type === 'object') && // Include both string and object types
+           !['workflow', 'billing', 'payment', 'access control', 'boundary', 'localization', 'notification'].includes(sectionNameLower);
   });
+  
+  for (const section of optionalSections) {
+    const fieldType = getFieldTypeForSection(section);
+    const validation = await getValidationForSection(section);
+    
+    optionalFields.push({
+      name: section.name.toLowerCase(),
+      label: section.name,
+      type: fieldType,
+      required: section.required || false,
+      helperText: section.documentation || `Configure ${section.name}`,
+      validation: validation,
+      isOptional: true, // Mark as optional for UI
+      schema: validation.schema, // Include schema for guided questions
+      enabled: false // Default to disabled
+    });
+  }
 
   if (optionalFields.length > 0) {
     steps.push({
       label: 'Optional Configuration',
-      description: 'Configure optional schema fields',
+      description: 'Configure optional schema fields (toggle to enable)',
       fields: optionalFields
     });
   }
-
-  // Step 4: Service Category (always present)
-  steps.push({
-    label: 'Service Category',
-    description: 'Select the category and type of service',
-    fields: [
-      {
-        name: 'category',
-        label: 'Category',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'government', label: 'Government Service' },
-          { value: 'utility', label: 'Utility Service' },
-          { value: 'licensing', label: 'Licensing Service' },
-          { value: 'certificate', label: 'Certificate Service' },
-          { value: 'tax', label: 'Tax Service' },
-          { value: 'health', label: 'Health Service' },
-          { value: 'education', label: 'Education Service' },
-          { value: 'transport', label: 'Transport Service' }
-        ],
-        helperText: 'Select the category that best describes your service'
-      }
-    ]
-  });
 
   return steps;
 }
 
 // Helper function to get validation rules based on section
-function getValidationForSection(section) {
+async function getValidationForSection(section) {
   const validation = {};
   
   if (section.type === 'string') {
@@ -153,9 +102,64 @@ function getValidationForSection(section) {
       validation.pattern = '^[A-Z][a-zA-Z]+$';
       validation.helperText = 'Enter the service identifier (e.g., TradeLicense, PropertyTax)';
     }
+  } else if (section.type === 'object' || section.type === 'array') {
+    validation.type = 'json';
+    validation.schema = await getObjectSchema(section);
+    validation.helperText = `Expected structure: ${JSON.stringify(validation.schema.example, null, 2)}`;
   }
   
   return validation;
+}
+
+// Function to get specific object schema for each section
+async function getObjectSchema(section) {
+  const sectionNameLower = section.name.toLowerCase();
+  
+  // Map section names to file names
+  const sectionFileMap = {
+    'id generation': 'idgen',
+    'business rules': 'rules',
+    'access control': 'access',
+    'id generation': 'idgen',
+    'fields': 'fields',
+    'documents': 'documents',
+    'workflow': 'workflow',
+    'billing': 'bill',
+    'payment': 'payment',
+    'calculator': 'calculator',
+    'applicant': 'applicant',
+    'boundary': 'boundary',
+    'localization': 'localization',
+    'notification': 'notification'
+  };
+  
+  const fileName = sectionFileMap[sectionNameLower] || sectionNameLower;
+  
+  try {
+    // Try to load schema from individual schema file
+    const schemaPath = path.join(process.cwd(), 'schemas', `${fileName}.json`);
+    console.log('Loading schema from:', schemaPath);
+    const schemaContent = await fs.readFile(schemaPath, 'utf8');
+    const schema = JSON.parse(schemaContent);
+    
+    // Return schema with guided questions if available
+    return {
+      type: schema.type,
+      properties: schema.properties || {},
+      required: schema.required || [],
+      example: schema.documentation?.examples?.[0] || {},
+      guidedQuestions: schema.guidedQuestions || []
+    };
+  } catch (error) {
+    console.log('Error loading schema:', error.message);
+    // Fallback to basic schema if file doesn't exist
+    return {
+      type: 'object',
+      properties: {},
+      example: {},
+      guidedQuestions: []
+    };
+  }
 }
 
 // Helper function to get field type based on section
@@ -168,9 +172,9 @@ function getFieldTypeForSection(section) {
     case 'boolean':
       return 'select';
     case 'array':
-      return 'textarea';
+      return 'json';  // Use JSON editor for arrays
     case 'object':
-      return 'textarea';
+      return 'json';  // Use JSON editor for objects
     default:
       return 'text';
   }
@@ -193,8 +197,8 @@ function generatePreConfiguredSections(sections, requiredSections) {
       case 'workflow':
         preConfiguredSections.workflow = {
           business: '${service}',
-          businessService: '${serviceName}',
-          businessServiceSla: '${businessServiceSla || 72}',
+          businessService: '${service}',
+          businessServiceSla: '72',
           states: []
         };
         break;
@@ -465,13 +469,13 @@ router.get('/', async (req, res) => {
 });
 
 // Get configuration creation requirements (must be before /:section route)
-router.get('/create-requirements', (req, res) => {
+router.get('/create-requirements', async (req, res) => {
   try {
     const { order, required } = getSectionOrder();
     const sections = getAvailableSections();
     
     // Generate creation steps dynamically based on schema
-    const creationSteps = generateCreationSteps(sections, required);
+    const creationSteps = await generateCreationSteps(sections, required);
 
     // Generate pre-configured sections based on schema
     const preConfiguredSections = generatePreConfiguredSections(sections, required);
@@ -538,6 +542,33 @@ router.get('/:section', async (req, res) => {
   }
 });
 
+// Generate JSON from guided question answers
+router.post('/generate-json', async (req, res) => {
+  try {
+    const { fieldName, answers, questions } = req.body;
+    
+    if (!fieldName || !answers) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'fieldName and answers are required'
+      });
+    }
+
+    const generatedJson = await generateJsonFromGuidedQuestions(fieldName, answers, questions);
+    
+    res.json({
+      fieldName,
+      generatedJson
+    });
+  } catch (error) {
+    console.error('Error generating JSON from guided questions:', error);
+    res.status(500).json({
+      error: 'Failed to generate JSON',
+      message: error.message
+    });
+  }
+});
+
 // Get schema for a specific section
 router.get('/:section/schema', async (req, res) => {
   try {
@@ -589,5 +620,149 @@ router.get('/:section/examples', async (req, res) => {
     });
   }
 });
+
+// Function to generate JSON from guided question answers
+async function generateJsonFromGuidedQuestions(fieldName, answers, questions) {
+  const fieldNameLower = fieldName.toLowerCase();
+  
+  // Map section names to file names
+  const sectionFileMap = {
+    'id generation': 'idgen',
+    'business rules': 'rules',
+    'access control': 'access',
+    'fields': 'fields',
+    'documents': 'documents',
+    'workflow': 'workflow',
+    'billing': 'bill',
+    'payment': 'payment',
+    'calculator': 'calculator',
+    'applicant': 'applicant',
+    'boundary': 'boundary',
+    'localization': 'localization',
+    'notification': 'notification'
+  };
+  
+  const fileName = sectionFileMap[fieldNameLower] || fieldNameLower;
+  
+  try {
+    // Load schema from file
+    const schemaPath = path.join(process.cwd(), 'schemas', `${fileName}.json`);
+    const schemaContent = await fs.readFile(schemaPath, 'utf8');
+    const schema = JSON.parse(schemaContent);
+    
+    // Generate JSON based on schema type and generation logic
+    const schemaType = schema.type;
+    const generationLogic = schema.generationLogic;
+    
+    if (schemaType === 'object') {
+      const result = {};
+      
+      // Map guided question answers to schema properties
+      questions.forEach(question => {
+        const answer = answers[question.id];
+        if (answer !== undefined && answer !== '') {
+          if (question.type === 'textArray') {
+            result[question.id] = answer.split(',').map(s => s.trim()).filter(s => s);
+          } else if (question.type === 'multiSelect') {
+            result[question.id] = Array.isArray(answer) ? answer : [answer];
+          } else if (question.type === 'number') {
+            result[question.id] = parseInt(answer) || 0;
+          } else {
+            result[question.id] = answer;
+          }
+        }
+      });
+      
+      // Apply generation logic based on schema type
+      if (generationLogic) {
+        return applyGenerationLogic(fieldName, result, generationLogic);
+      }
+      
+      return result;
+    }
+    
+    if (schemaType === 'array') {
+      const result = {};
+      
+      questions.forEach(question => {
+        const answer = answers[question.id];
+        if (answer !== undefined && answer !== '') {
+          if (question.type === 'textArray') {
+            result[question.id] = answer.split(',').map(s => s.trim()).filter(s => s);
+          } else if (question.type === 'multiSelect') {
+            result[question.id] = Array.isArray(answer) ? answer : [answer];
+          } else if (question.type === 'number') {
+            result[question.id] = parseInt(answer) || 0;
+          } else {
+            result[question.id] = answer;
+          }
+        }
+      });
+      
+      if (generationLogic) {
+        return applyGenerationLogic(fieldName, result, generationLogic);
+      }
+      
+      return [];
+    }
+    
+    return {};
+  } catch (error) {
+    console.log('Error loading schema for JSON generation:', error.message);
+    return {};
+  }
+}
+
+// Function to apply generation logic based on schema
+function applyGenerationLogic(fieldName, answers, generationLogic) {
+  const fieldNameLower = fieldName.toLowerCase();
+  
+  if (generationLogic.type === 'array') {
+    if (fieldNameLower === 'fields') {
+      const fieldCount = parseInt(answers.fieldCount) || 1;
+      const fieldNames = answers.fieldNames || [];
+      const fieldTypes = answers.fieldTypes || ['text'];
+      
+      return Array.from({ length: fieldCount }, (_, i) => ({
+        name: fieldNames[i] || `field${i + 1}`,
+        label: fieldNames[i] || `Field ${i + 1}`,
+        type: fieldTypes[i % fieldTypes.length] || 'text',
+        required: true
+      }));
+    }
+  }
+  
+  if (generationLogic.type === 'object') {
+    if (fieldNameLower === 'documents') {
+      const documentCount = parseInt(answers.documentCount) || 1;
+      const documentNames = answers.documentNames || [];
+      const documentTypes = answers.documentTypes || ['pdf'];
+      const mandatoryDocuments = answers.mandatoryDocuments || [];
+      
+      return {
+        required: Array.from({ length: documentCount }, (_, i) => ({
+          name: documentNames[i] || `document${i + 1}`,
+          type: documentTypes[i % documentTypes.length] || 'pdf',
+          mandatory: mandatoryDocuments.includes(documentNames[i])
+        }))
+      };
+    }
+    
+    if (fieldNameLower === 'business rules' || fieldNameLower === 'rules') {
+      const validationRules = answers.validationRules || [];
+      const fieldValidations = answers.fieldValidations || [];
+      
+      return {
+        validation: fieldValidations.map(field => ({
+          field,
+          rule: validationRules[0] || 'REQUIRED',
+          value: validationRules.includes('MIN') ? 18 : undefined
+        }))
+      };
+    }
+  }
+  
+  return answers;
+}
 
 module.exports = router; 

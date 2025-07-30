@@ -29,6 +29,44 @@
       }
     }
   },
+  "guidedQuestions": [
+    {
+      "id": "documentCount",
+      "question": "How many documents do you need?",
+      "type": "number",
+      "placeholder": "Enter number of documents"
+    },
+    {
+      "id": "documentNames",
+      "question": "What are the names of your documents?",
+      "type": "textArray",
+      "placeholder": "Enter document names separated by commas (e.g., Aadhar, Voter ID)"
+    },
+    {
+      "id": "documentTypes",
+      "question": "What types of documents are these?",
+      "type": "multiSelect",
+      "suggestions": ["pdf", "image", "doc", "docx"],
+      "placeholder": "Select document types"
+    },
+    {
+      "id": "mandatoryDocuments",
+      "question": "Which documents are mandatory?",
+      "type": "textArray",
+      "placeholder": "Enter mandatory document names"
+    }
+  ],
+  "generationLogic": {
+    "type": "object",
+    "description": "Generate document configuration object from guided question answers",
+    "logic": {
+      "documentCount": "number of documents to generate",
+      "documentNames": "comma-separated document names",
+      "documentTypes": "array of document types",
+      "mandatoryDocuments": "comma-separated mandatory document names",
+      "output": "Object with required array containing document objects"
+    }
+  },
   "documentation": {
     "description": "Defines required documents, file types, and upload configurations for the service.",
     "usage": "Configure required documents for the service application.",

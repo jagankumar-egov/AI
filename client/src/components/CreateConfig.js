@@ -19,12 +19,16 @@ import {
   FormHelperText,
   CircularProgress,
   Alert,
+  Switch,
+  FormControlLabel,
+  Chip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useConfigStore } from '../stores/configStore';
 import { useQuery } from 'react-query';
 import { configAPI } from '../services/api';
 import toast from 'react-hot-toast';
+import MonacoEditor from './MonacoEditor';
 
 const CreateConfig = () => {
   const navigate = useNavigate();
@@ -32,6 +36,8 @@ const CreateConfig = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
+  const [enabledOptionalFields, setEnabledOptionalFields] = useState({});
+  const [guidedQuestionStates, setGuidedQuestionStates] = useState({});
 
   // Fetch creation requirements from server
   const { data: requirements, isLoading, error } = useQuery(
@@ -58,11 +64,39 @@ const CreateConfig = () => {
     }
   };
 
+  const handleOptionalFieldToggle = (fieldName) => (event) => {
+    const enabled = event.target.checked;
+    setEnabledOptionalFields(prev => ({
+      ...prev,
+      [fieldName]: enabled
+    }));
+    
+    // Clear field data if disabled
+    if (!enabled) {
+      setFormData(prev => {
+        const newData = { ...prev };
+        delete newData[fieldName];
+        return newData;
+      });
+    }
+  };
+
   const validateField = (fieldName, value, validation) => {
     if (!validation) return null;
     
     if (validation.required && !value) {
       return 'This field is required';
+    }
+    
+    // Validate JSON fields
+    if (validation.type === 'json' || fieldName.includes('json')) {
+      try {
+        if (value && value.trim() !== '') {
+          JSON.parse(value);
+        }
+      } catch (e) {
+        return 'Invalid JSON format';
+      }
     }
     
     if (validation.minLength && value.length < validation.minLength) {
@@ -107,16 +141,21 @@ const CreateConfig = () => {
       step.fields.forEach(field => {
         const value = formData[field.name];
         const validation = requirements.validation[field.name];
+        const isOptional = field.isOptional;
+        const isEnabled = isOptional ? enabledOptionalFields[field.name] : true;
         
-        if (validation) {
-          const error = validateField(field.name, value, { ...field, ...validation });
-          if (error) {
-            errors[field.name] = error;
+        // Only validate if field is enabled (for optional fields)
+        if (isEnabled) {
+          if (validation) {
+            const error = validateField(field.name, value, { ...field, ...validation });
+            if (error) {
+              errors[field.name] = error;
+              hasErrors = true;
+            }
+          } else if (field.required && !value) {
+            errors[field.name] = 'This field is required';
             hasErrors = true;
           }
-        } else if (field.required && !value) {
-          errors[field.name] = 'This field is required';
-          hasErrors = true;
         }
       });
     });
@@ -127,20 +166,19 @@ const CreateConfig = () => {
       return;
     }
 
+    // Process JSON fields from form data
+    const processedFormData = processJsonFields(formData);
+    
     // Process pre-configured sections with template variables
     const processedConfig = {};
     Object.keys(requirements.preConfiguredSections).forEach(sectionName => {
       const sectionConfig = requirements.preConfiguredSections[sectionName];
-      processedConfig[sectionName] = processTemplateVariables(sectionConfig, formData);
+      processedConfig[sectionName] = processTemplateVariables(sectionConfig, processedFormData);
     });
 
-    // Create the final configuration
+    // Create the final configuration using only schema fields
     const initialConfig = {
-      serviceName: formData.serviceName,
-      module: formData.module,
-      service: formData.service,
-      description: formData.description,
-      category: formData.category,
+      ...processedFormData,  // Include all processed form data from schema fields
       ...processedConfig
     };
 
@@ -173,6 +211,24 @@ const CreateConfig = () => {
     return config;
   };
 
+  const processJsonFields = (formData) => {
+    const processed = { ...formData };
+    
+    // Process JSON fields
+    Object.keys(processed).forEach(key => {
+      if (typeof processed[key] === 'string' && processed[key].trim().startsWith('{')) {
+        try {
+          processed[key] = JSON.parse(processed[key]);
+        } catch (e) {
+          // Keep as string if JSON parsing fails
+          console.warn(`Failed to parse JSON for field ${key}:`, e);
+        }
+      }
+    });
+    
+    return processed;
+  };
+
   // Show loading state
   if (isLoading) {
     return (
@@ -197,6 +253,48 @@ const CreateConfig = () => {
   }
 
   const renderField = (field) => {
+    const isOptional = field.isOptional;
+    const isEnabled = isOptional ? enabledOptionalFields[field.name] : true;
+    
+    // For optional fields, show toggle first
+    if (isOptional) {
+      return (
+        <Box>
+          <Box display="flex" alignItems="center" mb={2}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isEnabled}
+                  onChange={handleOptionalFieldToggle(field.name)}
+                  color="primary"
+                />
+              }
+              label={
+                <Box>
+                  <Typography variant="subtitle1">
+                    {field.label}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {field.helperText}
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
+          
+          {isEnabled && (
+            <Box ml={4}>
+              {renderFieldContent(field)}
+            </Box>
+          )}
+        </Box>
+      );
+    }
+    
+    return renderFieldContent(field);
+  };
+
+  const renderFieldContent = (field) => {
     const error = validationErrors[field.name];
     
     if (field.type === 'select') {
@@ -237,6 +335,10 @@ const CreateConfig = () => {
       );
     }
 
+    if (field.type === 'json') {
+      return renderGuidedJsonField(field);
+    }
+
     return (
       <TextField
         fullWidth
@@ -252,6 +354,233 @@ const CreateConfig = () => {
       />
     );
   };
+
+  const renderGuidedJsonField = (field) => {
+    const error = validationErrors[field.name];
+    const schema = field.validation?.schema;
+    const guidedQuestions = schema?.guidedQuestions;
+    
+    if (guidedQuestions) {
+      return renderGuidedQuestions(field, guidedQuestions);
+    }
+    
+    // Fallback to JSON editor if no guided questions
+    const example = schema?.example;
+    
+    return (
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          {field.label} {field.required && '*'}
+        </Typography>
+        
+        {schema && (
+          <Box mb={2} p={2} bgcolor="grey.50" borderRadius={1}>
+            <Typography variant="caption" color="text.secondary" gutterBottom>
+              <strong>Expected Structure:</strong>
+            </Typography>
+            <Typography variant="caption" component="pre" sx={{ fontSize: '0.75rem', whiteSpace: 'pre-wrap' }}>
+              {JSON.stringify(example, null, 2)}
+            </Typography>
+          </Box>
+        )}
+        
+        <MonacoEditor
+          height="200px"
+          language="json"
+          value={formData[field.name] || '{}'}
+          onChange={(value) => handleInputChange(field.name)({ target: { value } })}
+          options={{
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            fontSize: 12,
+          }}
+        />
+        {(field.helperText || error) && (
+          <FormHelperText error={!!error}>
+            {error || field.helperText}
+          </FormHelperText>
+        )}
+      </Box>
+    );
+  };
+
+  const renderGuidedQuestions = (field, questions) => {
+    const fieldKey = field.name;
+    const currentState = guidedQuestionStates[fieldKey] || { currentIndex: 0, answers: {} };
+    const currentQuestion = questions[currentState.currentIndex];
+    const isLastQuestion = currentState.currentIndex === questions.length - 1;
+    
+    const handleAnswer = async (answer) => {
+      const newAnswers = { ...currentState.answers, [currentQuestion.id]: answer };
+      const newState = { ...currentState, answers: newAnswers };
+      
+      if (isLastQuestion) {
+        // Generate JSON from answers
+        const generatedJson = await generateJsonFromAnswers(field.name, questions, newAnswers);
+        handleInputChange(field.name)({ target: { value: JSON.stringify(generatedJson, null, 2) } });
+      } else {
+        newState.currentIndex = currentState.currentIndex + 1;
+      }
+      
+      setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: newState }));
+    };
+    
+    const handleBack = () => {
+      if (currentState.currentIndex > 0) {
+        const newState = { ...currentState, currentIndex: currentState.currentIndex - 1 };
+        setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: newState }));
+      }
+    };
+    
+    return (
+      <Box>
+        <Typography variant="subtitle2" gutterBottom>
+          {field.label} {field.required && '*'}
+        </Typography>
+        
+        <Box mb={2} p={2} bgcolor="blue.50" borderRadius={1}>
+          <Typography variant="body2" gutterBottom>
+            <strong>Question {currentState.currentIndex + 1} of {questions.length}:</strong>
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            {currentQuestion.question}
+          </Typography>
+          
+          {currentQuestion.type === 'number' && (
+            <TextField
+              fullWidth
+              type="number"
+              placeholder={currentQuestion.placeholder}
+              value={currentState.answers[currentQuestion.id] || ''}
+              onChange={(e) => {
+                const newAnswers = { ...currentState.answers, [currentQuestion.id]: e.target.value };
+                setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: { ...currentState, answers: newAnswers } }));
+              }}
+              sx={{ mt: 1 }}
+            />
+          )}
+          
+          {currentQuestion.type === 'textArray' && (
+            <TextField
+              fullWidth
+              placeholder={currentQuestion.placeholder}
+              value={currentState.answers[currentQuestion.id] || ''}
+              onChange={(e) => {
+                const newAnswers = { ...currentState.answers, [currentQuestion.id]: e.target.value };
+                setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: { ...currentState, answers: newAnswers } }));
+              }}
+              helperText="Enter values separated by commas"
+              sx={{ mt: 1 }}
+            />
+          )}
+          
+          {currentQuestion.type === 'multiSelect' && (
+            <FormControl fullWidth sx={{ mt: 1 }}>
+              <InputLabel>Select options</InputLabel>
+              <Select
+                multiple
+                value={currentState.answers[currentQuestion.id] || []}
+                onChange={(e) => {
+                  const newAnswers = { ...currentState.answers, [currentQuestion.id]: e.target.value };
+                  setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: { ...currentState, answers: newAnswers } }));
+                }}
+                label="Select options"
+              >
+                {currentQuestion.suggestions.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          )}
+          
+          {currentQuestion.suggestions && currentQuestion.type !== 'multiSelect' && (
+            <Box mt={1}>
+              <Typography variant="caption" color="text.secondary">
+                Suggestions:
+              </Typography>
+              <Box display="flex" flexWrap="wrap" gap={1} mt={0.5}>
+                {currentQuestion.suggestions.map((suggestion) => (
+                  <Chip
+                    key={suggestion}
+                    label={suggestion}
+                    size="small"
+                    onClick={() => handleAnswer(suggestion)}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
+          
+                      <Box display="flex" gap={1} mt={2}>
+            {currentState.currentIndex > 0 && (
+              <Button variant="outlined" onClick={handleBack}>
+                Back
+              </Button>
+            )}
+            <Button 
+              variant="contained" 
+              onClick={() => handleAnswer(currentState.answers[currentQuestion.id])}
+              disabled={!currentState.answers[currentQuestion.id]}
+            >
+              {isLastQuestion ? 'Generate Config' : 'Next'}
+            </Button>
+          </Box>
+        </Box>
+        
+        {formData[field.name] && (
+          <Box mt={2}>
+            <Typography variant="caption" color="text.secondary" gutterBottom>
+              Generated Configuration:
+            </Typography>
+            <MonacoEditor
+              height="150px"
+              language="json"
+              value={formData[field.name]}
+              options={{
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                fontSize: 12,
+                readOnly: true,
+              }}
+            />
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  const generateJsonFromAnswers = async (fieldName, questions, answers) => {
+    try {
+      // Call server endpoint to generate JSON from guided questions
+      const response = await fetch('/api/docs/generate-json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fieldName,
+          answers,
+          questions
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate JSON from server');
+      }
+      
+      const data = await response.json();
+      return data.generatedJson;
+    } catch (error) {
+      console.error('Error generating JSON from guided questions:', error);
+      return {};
+    }
+  };
+
+  // The generation logic should be handled by the server based on schema
+  // Client only processes the guided questions and sends answers to server
 
   return (
     <Box>

@@ -31,6 +31,26 @@
       "maxLength": 10
     }
   },
+  "guidedQuestions": [
+    {
+      "id": "format",
+      "question": "What format should your service IDs follow?",
+      "type": "string",
+      "suggestions": [
+        "TL/{YYYY}/{MM}/{DD}/{SEQUENCE}",
+        "PT/{YYYY}/{SEQUENCE}",
+        "WC/{YYYY}/{MM}/{SEQUENCE}"
+      ],
+      "placeholder": "Enter ID format pattern"
+    },
+    {
+      "id": "sequence",
+      "question": "What should be the starting sequence number?",
+      "type": "string",
+      "suggestions": ["0001", "1000", "0000"],
+      "placeholder": "Enter starting sequence"
+    }
+  ],
   "documentation": {
     "description": "Configures how unique identifiers are generated for service records. Supports various patterns and sequences.",
     "usage": "Define the format pattern for generating unique IDs. Use placeholders like {YYYY}, {MM}, {DD}, {SEQUENCE} for dynamic values.",

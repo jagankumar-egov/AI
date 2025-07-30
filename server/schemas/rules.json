@@ -23,6 +23,30 @@
       }
     }
   },
+  "guidedQuestions": [
+    {
+      "id": "validationRules",
+      "question": "What validation rules do you need?",
+      "type": "multiSelect",
+      "suggestions": ["MIN", "MAX", "REQUIRED", "PATTERN", "LENGTH"],
+      "placeholder": "Select validation rules"
+    },
+    {
+      "id": "fieldValidations",
+      "question": "Which fields need validation?",
+      "type": "textArray",
+      "placeholder": "Enter field names that need validation"
+    }
+  ],
+  "generationLogic": {
+    "type": "object",
+    "description": "Generate business rules object from guided question answers",
+    "logic": {
+      "validationRules": "array of validation rule types",
+      "fieldValidations": "comma-separated field names to validate",
+      "output": "Object with validation array containing rule objects"
+    }
+  },
   "documentation": {
     "description": "Defines business rules, validation logic, and custom calculations for the service.",
     "usage": "Configure validation rules and business logic for the service.",
