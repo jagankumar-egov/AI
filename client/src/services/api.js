@@ -71,6 +71,9 @@ export const configAPI = {
   // Get section order
   getSectionOrder: () => api.get('/docs/section-order'),
   
+  // Get configuration creation requirements
+  getCreateRequirements: () => api.get('/docs/create-requirements'),
+  
   // External services
   sendToExternal: (config, service, options) =>
     api.post('/external-service', { config, service, options }),

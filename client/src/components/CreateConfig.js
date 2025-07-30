@@ -8,8 +8,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
-  Alert,
   Stepper,
   Step,
   StepLabel,
@@ -19,6 +17,8 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useConfigStore } from '../stores/configStore';
@@ -30,30 +30,62 @@ const CreateConfig = () => {
   const navigate = useNavigate();
   const { setConfig, setServiceName } = useConfigStore();
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
-    serviceName: '',
-    module: '',
-    service: '',
-    description: '',
-    category: 'government',
-    businessService: '',
-    businessServiceSla: ''
-  });
+  const [formData, setFormData] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Fetch available sections for reference
-  const { data: sections } = useQuery(
-    'sections',
-    () => configAPI.getDocs(),
+  // Fetch creation requirements from server
+  const { data: requirements, isLoading, error } = useQuery(
+    'createRequirements',
+    () => configAPI.getCreateRequirements(),
     {
       staleTime: 5 * 60 * 1000,
     }
   );
 
-  const handleInputChange = (field) => (event) => {
+  const handleInputChange = (fieldName) => (event) => {
+    const value = event.target.value;
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [fieldName]: value
     }));
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[fieldName]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [fieldName]: null
+      }));
+    }
+  };
+
+  const validateField = (fieldName, value, validation) => {
+    if (!validation) return null;
+    
+    if (validation.required && !value) {
+      return 'This field is required';
+    }
+    
+    if (validation.minLength && value.length < validation.minLength) {
+      return `Minimum length is ${validation.minLength} characters`;
+    }
+    
+    if (validation.maxLength && value.length > validation.maxLength) {
+      return `Maximum length is ${validation.maxLength} characters`;
+    }
+    
+    if (validation.min && Number(value) < validation.min) {
+      return `Minimum value is ${validation.min}`;
+    }
+    
+    if (validation.max && Number(value) > validation.max) {
+      return `Maximum value is ${validation.max}`;
+    }
+    
+    if (validation.pattern && !new RegExp(validation.pattern).test(value)) {
+      return 'Invalid format';
+    }
+    
+    return null;
   };
 
   const handleNext = () => {
@@ -65,58 +97,51 @@ const CreateConfig = () => {
   };
 
   const handleCreate = () => {
-    // Validate required fields
-    if (!formData.serviceName || !formData.module || !formData.service) {
-      toast.error('Please fill in all required fields');
+    if (!requirements) return;
+
+    // Validate all required fields
+    const errors = {};
+    let hasErrors = false;
+
+    requirements.steps.forEach(step => {
+      step.fields.forEach(field => {
+        const value = formData[field.name];
+        const validation = requirements.validation[field.name];
+        
+        if (validation) {
+          const error = validateField(field.name, value, { ...field, ...validation });
+          if (error) {
+            errors[field.name] = error;
+            hasErrors = true;
+          }
+        } else if (field.required && !value) {
+          errors[field.name] = 'This field is required';
+          hasErrors = true;
+        }
+      });
+    });
+
+    if (hasErrors) {
+      setValidationErrors(errors);
+      toast.error('Please fix the validation errors');
       return;
     }
 
-    // Initialize the configuration with comprehensive details
+    // Process pre-configured sections with template variables
+    const processedConfig = {};
+    Object.keys(requirements.preConfiguredSections).forEach(sectionName => {
+      const sectionConfig = requirements.preConfiguredSections[sectionName];
+      processedConfig[sectionName] = processTemplateVariables(sectionConfig, formData);
+    });
+
+    // Create the final configuration
     const initialConfig = {
       serviceName: formData.serviceName,
       module: formData.module,
       service: formData.service,
       description: formData.description,
       category: formData.category,
-      // Pre-configure some basic sections
-      workflow: {
-        business: formData.businessService || formData.service,
-        businessService: formData.serviceName,
-        businessServiceSla: formData.businessServiceSla ? parseInt(formData.businessServiceSla) : 72,
-        states: []
-      },
-      bill: {
-        BusinessService: formData.service,
-        taxHead: [],
-        taxPeriod: []
-      },
-      payment: {
-        gateway: "PAYTM"
-      },
-      access: {
-        roles: ["CITIZEN", "EMPLOYEE"],
-        permissions: {
-          "CITIZEN": ["CREATE", "VIEW"],
-          "EMPLOYEE": ["CREATE", "VIEW", "UPDATE", "DELETE"]
-        }
-      },
-      boundary: {
-        lowestLevel: "WARD",
-        hierarchyType: "ADMIN"
-      },
-      localization: {
-        language: "en_IN",
-        currency: "INR",
-        dateFormat: "DD/MM/YYYY"
-      },
-      notification: {
-        channels: ["SMS", "EMAIL"],
-        templates: {
-          "SUBMISSION": "Your application has been submitted successfully.",
-          "APPROVAL": "Your application has been approved.",
-          "REJECTION": "Your application has been rejected."
-        }
-      }
+      ...processedConfig
     };
 
     // Set the configuration in the store
@@ -129,98 +154,54 @@ const CreateConfig = () => {
     navigate('/');
   };
 
-  const steps = [
-    {
-      label: 'Basic Information',
-      description: 'Enter the basic details for your service configuration',
-      fields: [
-        {
-          name: 'serviceName',
-          label: 'Service Name',
-          type: 'text',
-          required: true,
-          helperText: 'Enter a unique name for your service (e.g., Trade License, Property Tax)'
-        },
-        {
-          name: 'description',
-          label: 'Description',
-          type: 'text',
-          required: false,
-          multiline: true,
-          rows: 3,
-          helperText: 'Brief description of what this service does'
-        }
-      ]
-    },
-    {
-      label: 'Module & Service Details',
-      description: 'Configure the module and service identifiers',
-      fields: [
-        {
-          name: 'module',
-          label: 'Module',
-          type: 'text',
-          required: true,
-          helperText: 'Enter the module name (e.g., tradelicence, propertytax)'
-        },
-        {
-          name: 'service',
-          label: 'Service',
-          type: 'text',
-          required: true,
-          helperText: 'Enter the service identifier (e.g., TradeLicense, PropertyTax)'
-        }
-      ]
-    },
-    {
-      label: 'Service Category',
-      description: 'Select the category and type of service',
-      fields: [
-        {
-          name: 'category',
-          label: 'Category',
-          type: 'select',
-          required: true,
-          options: [
-            { value: 'government', label: 'Government Service' },
-            { value: 'utility', label: 'Utility Service' },
-            { value: 'licensing', label: 'Licensing Service' },
-            { value: 'certificate', label: 'Certificate Service' },
-            { value: 'tax', label: 'Tax Service' },
-            { value: 'health', label: 'Health Service' },
-            { value: 'education', label: 'Education Service' },
-            { value: 'transport', label: 'Transport Service' }
-          ],
-          helperText: 'Select the category that best describes your service'
-        }
-      ]
-    },
-    {
-      label: 'Initial Configuration',
-      description: 'Configure basic settings for your service',
-      fields: [
-        {
-          name: 'businessService',
-          label: 'Business Service',
-          type: 'text',
-          required: false,
-          helperText: 'Business service identifier (optional)'
-        },
-        {
-          name: 'businessServiceSla',
-          label: 'SLA (Hours)',
-          type: 'number',
-          required: false,
-          helperText: 'Service level agreement in hours (e.g., 72 for 3 days)'
-        }
-      ]
+  const processTemplateVariables = (config, formData) => {
+    if (typeof config === 'string') {
+      return config.replace(/\${(\w+)}/g, (match, key) => {
+        return formData[key] || match;
+      });
+    } else if (typeof config === 'object' && config !== null) {
+      if (Array.isArray(config)) {
+        return config.map(item => processTemplateVariables(item, formData));
+      } else {
+        const processed = {};
+        Object.keys(config).forEach(key => {
+          processed[key] = processTemplateVariables(config[key], formData);
+        });
+        return processed;
+      }
     }
-  ];
+    return config;
+  };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Alert severity="error" sx={{ mb: 2 }}>
+        Failed to load configuration requirements: {error.message}
+      </Alert>
+    );
+  }
+
+  // Show form only when requirements are loaded
+  if (!requirements) {
+    return null;
+  }
 
   const renderField = (field) => {
+    const error = validationErrors[field.name];
+    
     if (field.type === 'select') {
       return (
-        <FormControl fullWidth required={field.required}>
+        <FormControl fullWidth required={field.required} error={!!error}>
           <InputLabel>{field.label}</InputLabel>
           <Select
             value={formData[field.name] || ''}
@@ -233,8 +214,8 @@ const CreateConfig = () => {
               </MenuItem>
             ))}
           </Select>
-          {field.helperText && (
-            <FormHelperText>{field.helperText}</FormHelperText>
+          {(field.helperText || error) && (
+            <FormHelperText>{error || field.helperText}</FormHelperText>
           )}
         </FormControl>
       );
@@ -249,7 +230,8 @@ const CreateConfig = () => {
           onChange={handleInputChange(field.name)}
           required={field.required}
           type="number"
-          helperText={field.helperText}
+          error={!!error}
+          helperText={error || field.helperText}
           variant="outlined"
         />
       );
@@ -264,7 +246,8 @@ const CreateConfig = () => {
         required={field.required}
         multiline={field.multiline}
         rows={field.rows}
-        helperText={field.helperText}
+        error={!!error}
+        helperText={error || field.helperText}
         variant="outlined"
       />
     );
@@ -281,7 +264,7 @@ const CreateConfig = () => {
         </Typography>
 
         <Stepper activeStep={activeStep} orientation="vertical">
-          {steps.map((step, index) => (
+          {requirements.steps.map((step, index) => (
             <Step key={step.label}>
               <StepLabel>{step.label}</StepLabel>
               <StepContent>
@@ -300,10 +283,10 @@ const CreateConfig = () => {
                 <Box sx={{ mb: 2, mt: 2 }}>
                   <Button
                     variant="contained"
-                    onClick={index === steps.length - 1 ? handleCreate : handleNext}
+                    onClick={index === requirements.steps.length - 1 ? handleCreate : handleNext}
                     sx={{ mt: 1, mr: 1 }}
                   >
-                    {index === steps.length - 1 ? 'Create Configuration' : 'Continue'}
+                    {index === requirements.steps.length - 1 ? 'Create Configuration' : 'Continue'}
                   </Button>
                   <Button
                     disabled={index === 0}
@@ -325,19 +308,15 @@ const CreateConfig = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Pre-configured Sections
+                {requirements.informationCards.preConfigured.title}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                The following sections will be pre-configured:
+                {requirements.informationCards.preConfigured.description}
               </Typography>
               <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-                <li>Workflow - Basic workflow structure</li>
-                <li>Billing - Tax heads and periods</li>
-                <li>Payment - Payment gateway settings</li>
-                <li>Access Control - Role-based permissions</li>
-                <li>Boundary - Geographic boundaries</li>
-                <li>Localization - Language and currency</li>
-                <li>Notifications - SMS and email templates</li>
+                {requirements.informationCards.preConfigured.items.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </Box>
             </CardContent>
           </Card>
@@ -347,19 +326,15 @@ const CreateConfig = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Available Sections
+                {requirements.informationCards.available.title}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                You can configure these additional sections:
+                {requirements.informationCards.available.description}
               </Typography>
               <Box component="ul" sx={{ mt: 1, pl: 2 }}>
-                <li>Fields - Form fields and validation</li>
-                <li>ID Generation - Unique ID patterns</li>
-                <li>Rules - Business rules and validation</li>
-                <li>Calculator - Fee calculation logic</li>
-                <li>Documents - Required document uploads</li>
-                <li>PDF - Certificate and receipt templates</li>
-                <li>Applicant - Applicant type configuration</li>
+                {requirements.informationCards.available.items.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
               </Box>
             </CardContent>
           </Card>
