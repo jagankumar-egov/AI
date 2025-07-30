@@ -5,7 +5,6 @@
   "pattern": "^[a-z]+$",
   "minLength": 1,
   "maxLength": 50,
-  "helperText": "Enter the module name (e.g., tradelicence, propertytax)",
   "examples": [
     "tradelicence",
     "propertytax",
@@ -19,6 +18,7 @@
       "tradelicence",
       "propertytax",
       "watertax"
-    ]
+    ],
+    "helperText": "Enter the module name (e.g., tradelicence, propertytax)"
   }
 } 

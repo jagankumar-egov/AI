@@ -58,12 +58,32 @@ export const configAPI = {
   generateConfig: (section, details, serviceName) =>
     api.post('/generate-config', { section, details, serviceName }),
   
+  // AI-guided configuration generation
+  generateAIGuidedConfig: (section, details, context = {}) =>
+    api.post('/generate-config/ai-guided', { section, details, context }),
+  
+  // Get AI-guided information
+  getAIGuidedInfo: () => api.get('/docs/ai-guided/info'),
+  
+  // Get section-specific AI guidance
+  getSectionAIGuidance: (section) => api.get(`/docs/ai-guided/${section}`),
+  
+  // Get conversation context for AI
+  getAIContext: (section, completedSections = [], currentConfig = {}) => 
+    api.get(`/docs/ai-guided/context/${section}`, {
+      params: { 
+        completedSections: completedSections.join(','), 
+        currentConfig: JSON.stringify(currentConfig) 
+      }
+    }),
+  
   // Validate configuration
   validateConfig: (config, section) =>
     api.post('/validate-config', { config, section }),
   
   // Get documentation
   getDocs: () => api.get('/docs'),
+  getSections: () => api.get('/docs'),
   getSectionDocs: (section) => api.get(`/docs/${section}`),
   getSectionSchema: (section) => api.get(`/docs/${section}/schema`),
   getSectionExamples: (section) => api.get(`/docs/${section}/examples`),

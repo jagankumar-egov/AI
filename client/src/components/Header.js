@@ -15,14 +15,14 @@ import {
   Chat as ChatIcon,
   GitHub as GitHubIcon,
   Add as AddIcon,
+  SmartToy as AIIcon,
 } from '@mui/icons-material';
 
 const Header = () => {
   const location = useLocation();
 
   const navItems = [
-    { path: '/create', label: 'Create New', icon: <AddIcon /> },
-    { path: '/', label: 'Config Generator', icon: <SettingsIcon /> },
+    { path: '/', label: 'Config Creator', icon: <AIIcon /> },
     { path: '/explorer', label: 'Schema Explorer', icon: <ExploreIcon /> },
     { path: '/chat', label: 'AI Assistant', icon: <ChatIcon /> },
   ];
@@ -43,9 +43,9 @@ const Header = () => {
             gap: 1,
           }}
         >
-          🧠 Service Config AI
+          🧠 Unified Config Creator
           <Chip
-            label="v1.0.0"
+            label="v2.0.0"
             size="small"
             color="secondary"
             sx={{ ml: 1 }}

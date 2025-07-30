@@ -696,4 +696,286 @@ function applyGenerationLogic(fieldName, answers, generationLogic) {
   return answers;
 }
 
+// Get AI-guided configuration information
+router.get('/ai-guided/info', async (req, res) => {
+  try {
+    const { order, required } = getSectionOrder();
+    const sections = getAvailableSections();
+    
+    // Get schema-driven information for each section
+    const sectionInfo = await Promise.all(sections.map(async (section) => {
+      const schema = await getSectionSchema(section.name);
+      const documentation = getSectionDocumentation(section.name);
+      
+      return {
+        name: section.name,
+        label: section.name,
+        type: section.type,
+        required: required.includes(section.name.toLowerCase()),
+        description: documentation?.description || `Configure ${section.name}`,
+        examples: documentation?.examples || [],
+        guidedQuestions: schema?.guidedQuestions || [],
+        generationLogic: schema?.generationLogic || null,
+        validation: await getValidationForSection(section),
+        helperText: documentation?.helperText || `Enter ${section.name} configuration`,
+        order: order.indexOf(section.name.toLowerCase())
+      };
+    }));
+    
+    // Sort by order
+    sectionInfo.sort((a, b) => a.order - b.order);
+    
+    res.json({
+      sections: sectionInfo,
+      requiredSections: required,
+      totalSections: sections.length,
+      availableSections: sections.map(s => s.name)
+    });
+  } catch (error) {
+    console.error('Error getting AI-guided info:', error);
+    res.status(500).json({
+      error: 'Failed to get AI-guided information',
+      message: error.message
+    });
+  }
+});
+
+// Get section-specific AI guidance
+router.get('/ai-guided/:section', async (req, res) => {
+  try {
+    const { section } = req.params;
+    const schema = await getSectionSchema(section);
+    const documentation = getSectionDocumentation(section);
+    
+    if (!schema) {
+      return res.status(404).json({
+        error: 'Section not found',
+        message: `Section '${section}' not found in schema`
+      });
+    }
+    
+    // Generate AI prompts based on schema
+    const aiPrompts = await generateAIPrompts(section, schema, documentation);
+    
+    res.json({
+      section,
+      schema,
+      documentation,
+      aiPrompts,
+      guidedQuestions: schema.guidedQuestions || [],
+      generationLogic: schema.generationLogic || null,
+      examples: documentation?.examples || [],
+      validation: await getValidationForSection({ name: section, type: schema.type })
+    });
+  } catch (error) {
+    console.error('Error getting section AI guidance:', error);
+    res.status(500).json({
+      error: 'Failed to get section AI guidance',
+      message: error.message
+    });
+  }
+});
+
+// Generate AI prompts based on schema using AI
+async function generateAIPrompts(section, schema, documentation) {
+  const prompts = {
+    welcome: `Let's configure the **${section}** section.`,
+    description: documentation?.description || `Configure the ${section} for your service.`,
+    examples: documentation?.examples || [],
+    suggestions: [],
+    questions: [],
+    copyablePrompts: []
+  };
+  
+  // Generate suggestions based on schema type
+  if (schema.type === 'string') {
+    prompts.suggestions.push(`Enter the ${section} value`);
+    if (schema.pattern) {
+      prompts.suggestions.push(`Follow the pattern: ${schema.pattern}`);
+    }
+  } else if (schema.type === 'object') {
+    prompts.suggestions.push(`Describe the ${section} configuration you need`);
+    prompts.suggestions.push(`I'll generate the complete ${section} structure for you`);
+  } else if (schema.type === 'array') {
+    prompts.suggestions.push(`List the ${section} items you need`);
+    prompts.suggestions.push(`I'll create the ${section} array for you`);
+  }
+  
+  // Add guided questions if available
+  if (schema.guidedQuestions) {
+    prompts.questions = schema.guidedQuestions.map(q => q.question);
+  }
+  
+  // Generate dynamic copyable prompts using AI
+  try {
+    const dynamicPrompts = await generateDynamicPrompts(section, schema, documentation);
+    prompts.copyablePrompts = dynamicPrompts;
+  } catch (error) {
+    console.error('Error generating dynamic prompts:', error);
+    // Fallback to basic prompts
+    prompts.copyablePrompts = [
+      {
+        title: "Basic Configuration",
+        prompt: `Create ${section} configuration with basic settings`,
+        description: `Basic ${section} configuration`
+      },
+      {
+        title: "Custom Configuration",
+        prompt: `Create ${section} configuration with: [your_requirements]`,
+        description: "Replace [your_requirements] with your specific needs"
+      }
+    ];
+  }
+  
+  return prompts;
+}
+
+// Generate dynamic prompts using AI
+async function generateDynamicPrompts(section, schema, documentation) {
+  const OpenAI = require('openai');
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  });
+
+  // Build context for AI prompt generation
+  const schemaContext = {
+    section: section,
+    schema: schema,
+    documentation: documentation,
+    examples: documentation?.examples || [],
+    description: documentation?.description || `Configure the ${section} for your service.`
+  };
+
+  const promptForAI = `You are a configuration prompt generator. Based on the following schema information, generate 3-4 simple, copyable prompts that users can easily modify for their requirements.
+
+Schema Information:
+- Section: ${section}
+- Description: ${schemaContext.description}
+- Schema Type: ${schema.type}
+- Schema Properties: ${JSON.stringify(schema.properties || {}, null, 2)}
+- Examples: ${JSON.stringify(schemaContext.examples, null, 2)}
+- Documentation: ${JSON.stringify(documentation, null, 2)}
+
+Requirements:
+1. Generate 3-4 different prompt variations (simple to complex)
+2. Each prompt should be in SIMPLE NATURAL LANGUAGE
+3. Use placeholders like [your_states] for customization
+4. Make prompts easy to copy, edit, and use
+5. Focus on common use cases and patterns
+6. Keep prompts short and actionable
+
+Generate prompts in this exact JSON format:
+[
+  {
+    "title": "Simple Title",
+    "prompt": "Simple natural language prompt",
+    "description": "Brief description"
+  }
+]
+
+Examples of good simple prompts:
+- "Create a workflow with 3 states: DRAFT -> SUBMITTED -> APPROVED"
+- "Create form fields: name (text, required), email (email, required)"
+- "Create billing with tax head: TL_FEE (Trade License Fee, required)"
+
+Make prompts SIMPLE and EASY to copy/edit. Avoid complex technical language.`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are a configuration prompt generator. Always respond with valid JSON array only, no explanations or markdown."
+        },
+        {
+          role: "user",
+          content: promptForAI
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 1000
+    });
+
+    const generatedPrompts = completion.choices[0].message.content;
+    
+    try {
+      const parsedPrompts = JSON.parse(generatedPrompts);
+      return Array.isArray(parsedPrompts) ? parsedPrompts : [];
+    } catch (parseError) {
+      console.error('Error parsing AI-generated prompts:', parseError);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error calling OpenAI for prompt generation:', error);
+    throw error;
+  }
+}
+
+// Get conversation context for AI
+router.get('/ai-guided/context/:section', async (req, res) => {
+  try {
+    const { section } = req.params;
+    const { completedSections = [], currentConfig = {} } = req.query;
+    
+    const schema = await getSectionSchema(section);
+    const documentation = getSectionDocumentation(section);
+    
+    if (!schema) {
+      return res.status(404).json({
+        error: 'Section not found',
+        message: `Section '${section}' not found in schema`
+      });
+    }
+    
+    // Build context based on completed sections
+    const context = {
+      currentSection: section,
+      completedSections: completedSections.split(',').filter(Boolean),
+      existingConfig: currentConfig,
+      schema,
+      documentation,
+      suggestions: generateContextualSuggestions(section, schema, completedSections.split(',').filter(Boolean), currentConfig)
+    };
+    
+    res.json(context);
+  } catch (error) {
+    console.error('Error getting AI context:', error);
+    res.status(500).json({
+      error: 'Failed to get AI context',
+      message: error.message
+    });
+  }
+});
+
+// Generate contextual suggestions based on completed sections
+function generateContextualSuggestions(section, schema, completedSections, currentConfig) {
+  const suggestions = [];
+  
+  // If service name is already configured, use it in suggestions
+  if (currentConfig.service) {
+    suggestions.push(`Based on your service "${currentConfig.service}", I'll help configure ${section}`);
+  }
+  
+  // If module is configured, use it in suggestions
+  if (currentConfig.module) {
+    suggestions.push(`For module "${currentConfig.module}", let's set up ${section}`);
+  }
+  
+  // Section-specific suggestions
+  if (section === 'workflow' && completedSections.includes('fields')) {
+    suggestions.push('I can create a workflow that matches your form fields');
+  }
+  
+  if (section === 'rules' && completedSections.includes('fields')) {
+    suggestions.push('I can create validation rules for your form fields');
+  }
+  
+  if (section === 'documents' && completedSections.includes('fields')) {
+    suggestions.push('I can suggest required documents based on your form fields');
+  }
+  
+  return suggestions;
+}
+
 module.exports = router; 

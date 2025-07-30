@@ -5,7 +5,7 @@
   "pattern": "^[A-Z][a-zA-Z]+$",
   "minLength": 1,
   "maxLength": 50,
-  "helperText": "Enter the service identifier (e.g., TradeLicense, PropertyTax)",
+
   "examples": [
     "TradeLicense",
     "PropertyTax",
@@ -19,6 +19,7 @@
       "TradeLicense",
       "PropertyTax",
       "WaterTax"
-    ]
+    ],
+    "helperText": "Enter the service identifier (e.g., TradeLicense, PropertyTax)"
   }
 } 

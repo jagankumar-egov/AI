@@ -131,34 +131,39 @@ const CreateConfig = () => {
   };
 
   const handleCreate = () => {
-    if (!requirements) return;
+    if (!requirements) {
+      console.warn('handleCreate: requirements is undefined');
+      return;
+    }
 
     // Validate all required fields
     const errors = {};
     let hasErrors = false;
 
-    requirements.steps.forEach(step => {
-      step.fields.forEach(field => {
-        const value = formData[field.name];
-        const validation = requirements.validation[field.name];
-        const isOptional = field.isOptional;
-        const isEnabled = isOptional ? enabledOptionalFields[field.name] : true;
-        
-        // Only validate if field is enabled (for optional fields)
-        if (isEnabled) {
-          if (validation) {
-            const error = validateField(field.name, value, { ...field, ...validation });
-            if (error) {
-              errors[field.name] = error;
+    if (requirements.steps) {
+      requirements.steps.forEach(step => {
+        step.fields.forEach(field => {
+          const value = formData[field.name];
+          const validation = requirements.validation[field.name];
+          const isOptional = field.isOptional;
+          const isEnabled = isOptional ? enabledOptionalFields[field.name] : true;
+          
+          // Only validate if field is enabled (for optional fields)
+          if (isEnabled) {
+            if (validation) {
+              const error = validateField(field.name, value, { ...field, ...validation });
+              if (error) {
+                errors[field.name] = error;
+                hasErrors = true;
+              }
+            } else if (field.required && !value) {
+              errors[field.name] = 'This field is required';
               hasErrors = true;
             }
-          } else if (field.required && !value) {
-            errors[field.name] = 'This field is required';
-            hasErrors = true;
           }
-        }
+        });
       });
-    });
+    }
 
     if (hasErrors) {
       setValidationErrors(errors);
@@ -171,10 +176,12 @@ const CreateConfig = () => {
     
     // Process pre-configured sections with template variables
     const processedConfig = {};
-    Object.keys(requirements.preConfiguredSections).forEach(sectionName => {
-      const sectionConfig = requirements.preConfiguredSections[sectionName];
-      processedConfig[sectionName] = processTemplateVariables(sectionConfig, processedFormData);
-    });
+    if (requirements.preConfiguredSections) {
+      Object.keys(requirements.preConfiguredSections).forEach(sectionName => {
+        const sectionConfig = requirements.preConfiguredSections[sectionName];
+        processedConfig[sectionName] = processTemplateVariables(sectionConfig, processedFormData);
+      });
+    }
 
     // Create the final configuration using only schema fields
     const initialConfig = {
@@ -193,6 +200,12 @@ const CreateConfig = () => {
   };
 
   const processTemplateVariables = (config, formData) => {
+    // Safety check: ensure formData exists
+    if (!formData) {
+      console.warn('processTemplateVariables: formData is undefined');
+      return config;
+    }
+    
     if (typeof config === 'string') {
       return config.replace(/\${(\w+)}/g, (match, key) => {
         return formData[key] || match;
@@ -359,9 +372,9 @@ const CreateConfig = () => {
     const error = validationErrors[field.name];
     const schema = field.validation?.schema;
     const guidedQuestions = schema?.guidedQuestions;
-    console.log(guidedQuestions);
+    console.log('Guided questions for', field.name, ':', guidedQuestions);
     
-    if (guidedQuestions) {
+    if (guidedQuestions && Array.isArray(guidedQuestions) && guidedQuestions.length > 0) {
       return renderGuidedQuestions(field, guidedQuestions);
     }
     
@@ -408,8 +421,44 @@ const CreateConfig = () => {
   const renderGuidedQuestions = (field, questions) => {
     const fieldKey = field.name;
     const currentState = guidedQuestionStates[fieldKey] || { currentIndex: 0, answers: {} };
+    
+    // Safety check: ensure questions array exists and has items
+    if (!questions || questions.length === 0) {
+      return (
+        <Box>
+          <Typography variant="subtitle2" gutterBottom>
+            {field.label} {field.required && '*'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            No guided questions available for this field.
+          </Typography>
+        </Box>
+      );
+    }
+    
+    // Safety check: ensure currentIndex is within bounds
+    if (currentState.currentIndex >= questions.length) {
+      const newState = { ...currentState, currentIndex: 0 };
+      setGuidedQuestionStates(prev => ({ ...prev, [fieldKey]: newState }));
+      return null; // Will re-render with correct index
+    }
+    
     const currentQuestion = questions[currentState.currentIndex];
     const isLastQuestion = currentState.currentIndex === questions.length - 1;
+    
+    // Safety check: ensure currentQuestion exists and has required properties
+    if (!currentQuestion || !currentQuestion.question || !currentQuestion.id) {
+      return (
+        <Box>
+          <Typography variant="subtitle2" gutterBottom>
+            {field.label} {field.required && '*'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Invalid question format. Please refresh the page.
+          </Typography>
+        </Box>
+      );
+    }
     
     const handleAnswer = async (answer) => {
       const newAnswers = { ...currentState.answers, [currentQuestion.id]: answer };

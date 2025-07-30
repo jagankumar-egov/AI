@@ -29,8 +29,19 @@ async function loadSchema(section) {
     const schema = await getSectionSchema(section);
     
     if (schema) {
-      schemaCache[section] = schema;
-      return schema;
+      // Create a clean schema for validation by removing custom fields
+      const cleanSchema = { ...schema };
+      delete cleanSchema.documentation;
+      delete cleanSchema.guidedQuestions;
+      delete cleanSchema.generationLogic;
+      
+      // Store both the full schema (for prompts) and clean schema (for validation)
+      schemaCache[section] = {
+        full: schema,
+        clean: cleanSchema
+      };
+      
+      return schemaCache[section];
     } else {
       throw new Error(`Schema not found for section: ${section}`);
     }
@@ -40,7 +51,8 @@ async function loadSchema(section) {
   }
 }
 
-function buildPrompt(section, details, schema) {
+// Enhanced prompt building for AI-guided experience
+async function buildPrompt(section, details, schema, context = {}) {
   const schemaDescription = JSON.stringify(schema, null, 2);
   
   // Check if the schema expects a primitive type (string, number, boolean)
@@ -51,13 +63,45 @@ function buildPrompt(section, details, schema) {
     outputFormat = `IMPORTANT: Since the schema expects a ${schema.type}, return ONLY the ${schema.type} value, not an object. For example, if schema expects a string, return "value" not {"key": "value"}.`;
   }
   
+  // Build context information
+  let contextInfo = '';
+  if (context.completedSections && context.completedSections.length > 0) {
+    contextInfo = `\nPreviously configured sections: ${context.completedSections.join(', ')}`;
+  }
+  if (context.existingConfig && Object.keys(context.existingConfig).length > 0) {
+    contextInfo += `\nExisting configuration: ${JSON.stringify(context.existingConfig, null, 2)}`;
+  }
+  
+  // Add guided questions if available
+  let guidedQuestionsInfo = '';
+  if (schema.guidedQuestions && schema.guidedQuestions.length > 0) {
+    guidedQuestionsInfo = `\n\nGuided Questions for this section:\n${schema.guidedQuestions.map(q => `- ${q.question}`).join('\n')}`;
+  }
+  
+  // Add schema-specific requirements
+  let schemaRequirements = '';
+  
+  // Generate dynamic schema requirements using AI
+  try {
+    schemaRequirements = await generateSchemaRequirements(section, schema, context);
+  } catch (error) {
+    console.error('Error generating schema requirements:', error);
+    // Fallback to basic requirements
+    schemaRequirements = `
+IMPORTANT REQUIREMENTS:
+- Follow the schema structure exactly
+- Include all required fields
+- Ensure proper data types
+- Validate against schema patterns`;
+  }
+  
   return `You are a service configuration generator. Generate a valid JSON configuration for the "${section}" section based on the following details and schema.
 
 Schema for ${section}:
 ${schemaDescription}
 
 User Details:
-${JSON.stringify(details, null, 2)}
+${JSON.stringify(details, null, 2)}${contextInfo}${guidedQuestionsInfo}${schemaRequirements}
 
 ${outputFormat}
 
@@ -65,16 +109,78 @@ Requirements:
 1. Generate ONLY valid JSON that matches the schema exactly
 2. Include all required fields from the schema
 3. Use the provided details to populate the configuration
-4. Ensure the output is properly formatted and valid
-5. Do not include any explanations or markdown formatting
-6. If the schema expects a primitive type (string, number, boolean), return ONLY that value, not an object
+4. Consider the context from previously configured sections
+5. Ensure the output is properly formatted and valid
+6. Do not include any explanations or markdown formatting
+7. If the schema expects a primitive type (string, number, boolean), return ONLY that value, not an object
+8. If guided questions are provided, use them to structure the configuration appropriately
+9. Follow the schema-specific requirements above exactly
 
 Generate the configuration:`;
 }
 
-router.post('/', async (req, res) => {
+// Generate dynamic schema requirements using AI
+async function generateSchemaRequirements(section, schema, context) {
+  const OpenAI = require('openai');
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  });
+
+  const promptForAI = `You are a schema requirements generator. Based on the following schema information, generate specific requirements and an example structure that the AI should follow when generating configurations.
+
+Schema Information:
+- Section: ${section}
+- Schema Type: ${schema.type}
+- Schema Properties: ${JSON.stringify(schema.properties || {}, null, 2)}
+- Required Fields: ${JSON.stringify(schema.required || [], null, 2)}
+- Context: ${JSON.stringify(context, null, 2)}
+
+Requirements:
+1. Generate specific requirements for this schema
+2. Include an example structure that follows the schema exactly
+3. Highlight required fields and validation rules
+4. Consider the section type and common patterns
+5. Include context-aware suggestions
+
+Generate in this format:
+IMPORTANT [SECTION] REQUIREMENTS:
+- [specific requirement 1]
+- [specific requirement 2]
+- [specific requirement 3]
+
+EXAMPLE [SECTION] STRUCTURE:
+[valid JSON example that follows the schema exactly]
+
+Focus on practical, actionable requirements that ensure valid configuration generation.`;
+
   try {
-    const { section, details, serviceName } = req.body;
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "You are a schema requirements generator. Generate specific, actionable requirements and examples for configuration generation."
+        },
+        {
+          role: "user",
+          content: promptForAI
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 800
+    });
+
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error('Error calling OpenAI for schema requirements:', error);
+    throw error;
+  }
+}
+
+// Enhanced route for AI-guided generation
+router.post('/ai-guided', async (req, res) => {
+  try {
+    const { section, details, context = {} } = req.body;
 
     if (!section) {
       return res.status(400).json({
@@ -89,10 +195,12 @@ router.post('/', async (req, res) => {
     }
 
     // Load schema for the section
-    const schema = await loadSchema(section);
+    const schemaData = await loadSchema(section);
+    const fullSchema = schemaData.full;
+    const cleanSchema = schemaData.clean;
     
-    // Build the prompt
-    const prompt = buildPrompt(section, details, schema);
+    // Build the enhanced prompt with context
+    const prompt = await buildPrompt(section, details, fullSchema, context);
 
     // Generate configuration using OpenAI
     const completion = await openai.chat.completions.create({
@@ -100,7 +208,7 @@ router.post('/', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a JSON configuration generator. Always respond with valid JSON only, no explanations or markdown. If the schema expects a primitive type (string, number, boolean), return ONLY that value, not an object."
+          content: "You are a JSON configuration generator for service configuration. Always respond with valid JSON only, no explanations or markdown. If the schema expects a primitive type (string, number, boolean), return ONLY that value, not an object. Consider the context from previously configured sections to create coherent configurations."
         },
         {
           role: "user",
@@ -125,8 +233,8 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Validate against schema
-    const validate = ajv.compile(schema);
+    // Validate against clean schema
+    const validate = ajv.compile(cleanSchema);
     const isValid = validate(parsedConfig);
 
     if (!isValid) {
@@ -137,22 +245,46 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Return the generated configuration
+    // Return the generated configuration with enhanced info
     res.json({
       success: true,
       section,
       config: parsedConfig,
-      serviceName: serviceName || 'GeneratedService',
-      timestamp: new Date().toISOString()
+      context: context,
+      timestamp: new Date().toISOString(),
+      suggestions: generateNextStepSuggestions(section, context)
     });
 
   } catch (error) {
-    console.error('Error generating config:', error);
+    console.error('Error generating AI-guided config:', error);
     res.status(500).json({
       error: 'Failed to generate configuration',
       message: error.message
     });
   }
 });
+
+// Generate suggestions for next steps
+function generateNextStepSuggestions(completedSection, context) {
+  const suggestions = [];
+  
+  // Based on what was just configured, suggest next steps
+  if (completedSection === 'service' || completedSection === 'module') {
+    suggestions.push('Now let\'s configure the form fields for your service');
+    suggestions.push('We can set up the workflow states next');
+  }
+  
+  if (completedSection === 'fields') {
+    suggestions.push('Great! Now let\'s create a workflow that matches your form fields');
+    suggestions.push('We can also set up validation rules for your fields');
+  }
+  
+  if (completedSection === 'workflow') {
+    suggestions.push('Perfect! Now let\'s configure the billing structure');
+    suggestions.push('We can set up access control roles next');
+  }
+  
+  return suggestions;
+}
 
 module.exports = router; 
