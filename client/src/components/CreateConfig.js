@@ -359,6 +359,7 @@ const CreateConfig = () => {
     const error = validationErrors[field.name];
     const schema = field.validation?.schema;
     const guidedQuestions = schema?.guidedQuestions;
+    console.log(guidedQuestions);
     
     if (guidedQuestions) {
       return renderGuidedQuestions(field, guidedQuestions);

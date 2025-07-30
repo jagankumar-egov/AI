@@ -1,24 +1,24 @@
 {
   "type": "string",
-  "description": "Service name and operational details",
+  "description": "Service identifier and configuration",
   "title": "Service Configuration",
-  "examples": [
-    "TradeLicense",
-    "PropertyTax",
-    "WaterCharge",
-    "BirthCertificate",
-    "DeathCertificate"
-  ],
   "pattern": "^[A-Z][a-zA-Z]+$",
   "minLength": 1,
   "maxLength": 50,
+  "helperText": "Enter the service identifier (e.g., TradeLicense, PropertyTax)",
+  "examples": [
+    "TradeLicense",
+    "PropertyTax",
+    "WaterTax",
+    "SewerageTax"
+  ],
   "documentation": {
-    "description": "The service name defines the specific service being configured. This is a required field that must be a PascalCase string value.",
-    "usage": "Use this field to specify the exact service name. This should match the service identifier used in the system.",
-    "validation": "Must be a PascalCase string starting with uppercase letter, no spaces or special characters allowed.",
-    "examples": {
-      "valid": ["TradeLicense", "PropertyTax", "WaterCharge"],
-      "invalid": ["trade license", "PROPERTY_TAX", "water-charge"]
-    }
+    "description": "The service identifier that uniquely identifies this service within the module.",
+    "usage": "Enter a PascalCase service name starting with uppercase letter.",
+    "examples": [
+      "TradeLicense",
+      "PropertyTax",
+      "WaterTax"
+    ]
   }
 } 

@@ -5,7 +5,10 @@ const {
   getAvailableSections, 
   getSectionOrder, 
   getSectionDocumentation,
-  getSectionSchema 
+  getSectionSchema,
+  getPreConfiguredSections,
+  getSectionGenerationLogic,
+  getSectionPreConfigTemplate
 } = require('../schemas');
 
 const router = express.Router();
@@ -54,8 +57,7 @@ async function generateCreationSteps(sections, requiredSections) {
   const optionalSections = sections.filter(section => {
     const sectionNameLower = section.name.toLowerCase();
     return !requiredSections.includes(sectionNameLower) && 
-           (section.type === 'string' || section.type === 'object') && // Include both string and object types
-           !['workflow', 'billing', 'payment', 'access control', 'boundary', 'localization', 'notification'].includes(sectionNameLower);
+           (section.type === 'string' || section.type === 'object'); // Include both string and object types
   });
   
   for (const section of optionalSections) {
@@ -94,13 +96,10 @@ async function getValidationForSection(section) {
     validation.minLength = 1;
     validation.maxLength = 100;
     
-    // Add pattern validation based on section name
-    if (section.name === 'module') {
-      validation.pattern = '^[a-z]+$';
-      validation.helperText = 'Enter the module name (e.g., tradelicence, propertytax)';
-    } else if (section.name === 'service') {
-      validation.pattern = '^[A-Z][a-zA-Z]+$';
-      validation.helperText = 'Enter the service identifier (e.g., TradeLicense, PropertyTax)';
+    // Get validation from schema file if available
+    const schemaValidation = await getSchemaValidation(section);
+    if (schemaValidation) {
+      Object.assign(validation, schemaValidation);
     }
   } else if (section.type === 'object' || section.type === 'array') {
     validation.type = 'json';
@@ -111,16 +110,15 @@ async function getValidationForSection(section) {
   return validation;
 }
 
-// Function to get specific object schema for each section
-async function getObjectSchema(section) {
-  const sectionNameLower = section.name.toLowerCase();
+// Centralized function to map section names to file names
+function getSectionFileName(sectionName) {
+  const sectionNameLower = sectionName.toLowerCase();
   
   // Map section names to file names
   const sectionFileMap = {
     'id generation': 'idgen',
     'business rules': 'rules',
     'access control': 'access',
-    'id generation': 'idgen',
     'fields': 'fields',
     'documents': 'documents',
     'workflow': 'workflow',
@@ -130,10 +128,52 @@ async function getObjectSchema(section) {
     'applicant': 'applicant',
     'boundary': 'boundary',
     'localization': 'localization',
-    'notification': 'notification'
+    'notification': 'notification',
+    'module': 'module',
+    'service': 'service'
   };
   
-  const fileName = sectionFileMap[sectionNameLower] || sectionNameLower;
+  return sectionFileMap[sectionNameLower] || sectionNameLower;
+}
+
+// Function to get validation from schema file
+async function getSchemaValidation(section) {
+  const fileName = getSectionFileName(section.name);
+  
+  try {
+    const schemaPath = path.join(process.cwd(), 'schemas', `${fileName}.json`);
+    const schemaContent = await fs.readFile(schemaPath, 'utf8');
+    const schema = JSON.parse(schemaContent);
+    
+    // Extract validation rules from schema
+    const validation = {};
+    
+    if (schema.pattern) {
+      validation.pattern = schema.pattern;
+    }
+    
+    if (schema.minLength !== undefined) {
+      validation.minLength = schema.minLength;
+    }
+    
+    if (schema.maxLength !== undefined) {
+      validation.maxLength = schema.maxLength;
+    }
+    
+    if (schema.helperText) {
+      validation.helperText = schema.helperText;
+    }
+    
+    return validation;
+  } catch (error) {
+    // If schema file doesn't exist, return null
+    return null;
+  }
+}
+
+// Function to get specific object schema for each section
+async function getObjectSchema(section) {
+  const fileName = getSectionFileName(section.name);
   
   try {
     // Try to load schema from individual schema file
@@ -183,69 +223,22 @@ function getFieldTypeForSection(section) {
 // Function to generate pre-configured sections based on schema
 function generatePreConfiguredSections(sections, requiredSections) {
   const preConfiguredSections = {};
+  const preConfiguredSectionNames = getPreConfiguredSections();
   
   // Get non-required sections that should be pre-configured
   const sectionsToPreConfigure = sections.filter(section => {
     const sectionNameLower = section.name.toLowerCase();
     return !requiredSections.includes(sectionNameLower) && 
-           ['workflow', 'billing', 'payment', 'access control', 'boundary', 'localization', 'notification'].includes(sectionNameLower);
+           preConfiguredSectionNames.includes(sectionNameLower);
   });
   
   sectionsToPreConfigure.forEach(section => {
     const sectionNameLower = section.name.toLowerCase();
-    switch (sectionNameLower) {
-      case 'workflow':
-        preConfiguredSections.workflow = {
-          business: '${service}',
-          businessService: '${service}',
-          businessServiceSla: '72',
-          states: []
-        };
-        break;
-      case 'billing':
-        preConfiguredSections.bill = {
-          BusinessService: '${service}',
-          taxHead: [],
-          taxPeriod: []
-        };
-        break;
-      case 'payment':
-        preConfiguredSections.payment = {
-          gateway: 'PAYTM'
-        };
-        break;
-      case 'access control':
-        preConfiguredSections.access = {
-          roles: ['CITIZEN', 'EMPLOYEE'],
-          permissions: {
-            'CITIZEN': ['CREATE', 'VIEW'],
-            'EMPLOYEE': ['CREATE', 'VIEW', 'UPDATE', 'DELETE']
-          }
-        };
-        break;
-      case 'boundary':
-        preConfiguredSections.boundary = {
-          lowestLevel: 'WARD',
-          hierarchyType: 'ADMIN'
-        };
-        break;
-      case 'localization':
-        preConfiguredSections.localization = {
-          language: 'en_IN',
-          currency: 'INR',
-          dateFormat: 'DD/MM/YYYY'
-        };
-        break;
-      case 'notification':
-        preConfiguredSections.notification = {
-          channels: ['SMS', 'EMAIL'],
-          templates: {
-            'SUBMISSION': 'Your application has been submitted successfully.',
-            'APPROVAL': 'Your application has been approved.',
-            'REJECTION': 'Your application has been rejected.'
-          }
-        };
-        break;
+    const preConfigTemplate = getSectionPreConfigTemplate(sectionNameLower);
+    
+    if (preConfigTemplate) {
+      // Use the section name as the key (not the mapped name)
+      preConfiguredSections[sectionNameLower] = preConfigTemplate;
     }
   });
   
@@ -255,17 +248,9 @@ function generatePreConfiguredSections(sections, requiredSections) {
 // Function to generate information cards based on schema
 function generateInformationCards(sections, requiredSections, preConfiguredSections) {
   const preConfiguredItems = Object.keys(preConfiguredSections).map(sectionName => {
-    // Map section names to their display names
-    const sectionNameMap = {
-      'workflow': 'Workflow',
-      'bill': 'Billing',
-      'payment': 'Payment',
-      'access': 'Access Control',
-      'boundary': 'Boundary',
-      'localization': 'Localization',
-      'notification': 'Notification'
-    };
-    const displayName = sectionNameMap[sectionName] || sectionName;
+    // Get section documentation for display name
+    const sectionDoc = getSectionDocumentation(sectionName);
+    const displayName = sectionDoc ? sectionDoc.name : sectionName;
     return `${displayName} - Pre-configured section`;
   });
 
@@ -417,29 +402,8 @@ function generatePromptingGuide(section, schema) {
   return guide;
 }
 
-// Configurable section order (edit this array to change the order)
-const SECTION_ORDER = [
-  "module",           // 1. Basic module information (REQUIRED)
-  "service",          // 2. Service name and details (REQUIRED)
-  "fields",           // 3. Form fields configuration (REQUIRED)
-  "idgen",            // 4. ID generation rules (REQUIRED)
-  "workflow",         // 5. Workflow states and transitions
-  "bill",             // 6. Billing configuration
-  "payment",          // 7. Payment gateway settings
-  "access",           // 8. Access control and roles
-  "rules",            // 9. Business rules and validation
-  "calculator",       // 10. Calculation logic
-  "documents",        // 11. Document requirements
-  "pdf",              // 12. PDF generation settings
-  "applicant",        // 13. Applicant configuration
-  "boundary",         // 14. Geographic boundaries
-  "localization",     // 15. Localization settings
-  "notification",     // 16. Notification settings
-  // Add more sections as needed
-];
-
-// Required sections based on schema
-const REQUIRED_SECTIONS = ["fields", "module", "service", "idgen"];
+// Use dynamic section management from schemas/index.js
+// The section order and required sections are now managed dynamically
 
 // Endpoint to get the section order and required sections
 router.get('/section-order', (req, res) => {
@@ -488,24 +452,7 @@ router.get('/create-requirements', async (req, res) => {
       preConfiguredSections,
       informationCards,
       requiredSections: required,
-      availableSections: sections.map(s => s.name),
-      validation: {
-        serviceName: {
-          minLength: 3,
-          maxLength: 100,
-          pattern: '^[a-zA-Z0-9\\s\\-_\\.]+$'
-        },
-        module: {
-          pattern: '^[a-z]+$',
-          minLength: 1,
-          maxLength: 50
-        },
-        service: {
-          pattern: '^[A-Z][a-zA-Z]+$',
-          minLength: 1,
-          maxLength: 50
-        }
-      }
+      availableSections: sections.map(s => s.name)
     });
   } catch (error) {
     console.error('Error getting creation requirements:', error);
@@ -623,26 +570,7 @@ router.get('/:section/examples', async (req, res) => {
 
 // Function to generate JSON from guided question answers
 async function generateJsonFromGuidedQuestions(fieldName, answers, questions) {
-  const fieldNameLower = fieldName.toLowerCase();
-  
-  // Map section names to file names
-  const sectionFileMap = {
-    'id generation': 'idgen',
-    'business rules': 'rules',
-    'access control': 'access',
-    'fields': 'fields',
-    'documents': 'documents',
-    'workflow': 'workflow',
-    'billing': 'bill',
-    'payment': 'payment',
-    'calculator': 'calculator',
-    'applicant': 'applicant',
-    'boundary': 'boundary',
-    'localization': 'localization',
-    'notification': 'notification'
-  };
-  
-  const fileName = sectionFileMap[fieldNameLower] || fieldNameLower;
+  const fileName = getSectionFileName(fieldName);
   
   try {
     // Load schema from file
@@ -717,7 +645,10 @@ async function generateJsonFromGuidedQuestions(fieldName, answers, questions) {
 function applyGenerationLogic(fieldName, answers, generationLogic) {
   const fieldNameLower = fieldName.toLowerCase();
   
-  if (generationLogic.type === 'array') {
+  // Get generation logic from schema
+  const sectionGenerationLogic = getSectionGenerationLogic(fieldNameLower);
+  
+  if (sectionGenerationLogic && sectionGenerationLogic.type === 'array') {
     if (fieldNameLower === 'fields') {
       const fieldCount = parseInt(answers.fieldCount) || 1;
       const fieldNames = answers.fieldNames || [];
@@ -732,7 +663,7 @@ function applyGenerationLogic(fieldName, answers, generationLogic) {
     }
   }
   
-  if (generationLogic.type === 'object') {
+  if (sectionGenerationLogic && sectionGenerationLogic.type === 'object') {
     if (fieldNameLower === 'documents') {
       const documentCount = parseInt(answers.documentCount) || 1;
       const documentNames = answers.documentNames || [];

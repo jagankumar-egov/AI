@@ -1,24 +1,24 @@
 {
   "type": "string",
-  "description": "Basic module information and configuration",
+  "description": "Module identifier for the service",
   "title": "Module Configuration",
-  "examples": [
-    "tradelicence",
-    "propertytax", 
-    "watercharge",
-    "birthcertificate",
-    "deathcertificate"
-  ],
   "pattern": "^[a-z]+$",
   "minLength": 1,
   "maxLength": 50,
+  "helperText": "Enter the module name (e.g., tradelicence, propertytax)",
+  "examples": [
+    "tradelicence",
+    "propertytax",
+    "watertax",
+    "seweragetax"
+  ],
   "documentation": {
-    "description": "The module name identifies the specific service module within the system. This is a required field that must be a lowercase string value without spaces or special characters.",
-    "usage": "Use this field to specify which module the service belongs to. Common modules include tradelicence, propertytax, watercharge, etc.",
-    "validation": "Must be a lowercase string with only letters, no spaces or special characters allowed.",
-    "examples": {
-      "valid": ["tradelicence", "propertytax", "watercharge"],
-      "invalid": ["Trade License", "PROPERTY_TAX", "water-charge"]
-    }
+    "description": "The module identifier that groups related services together.",
+    "usage": "Enter a lowercase module name without spaces or special characters.",
+    "examples": [
+      "tradelicence",
+      "propertytax",
+      "watertax"
+    ]
   }
 } 

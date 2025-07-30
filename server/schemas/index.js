@@ -4,7 +4,7 @@ const path = require('path');
 // Schema configuration and metadata
 const SCHEMA_CONFIG = {
   // Required sections based on the main schema
-  required: ["fields", "module", "service", "idgen"],
+  required: ["module", "service", "idgen","fields", "workflow","documents"],
   
   // Configurable section order (edit this array to change the order)
   order: [
@@ -26,7 +26,10 @@ const SCHEMA_CONFIG = {
     "notification",     // 16. Notification settings
   ],
   
-  // Section descriptions and documentation
+  // Pre-configured sections (sections that get auto-generated)
+  preConfigured: ["workflow", "bill", "payment", "access", "boundary", "localization", "notification"],
+  
+  // Section metadata for dynamic generation
   sections: {
     module: {
       name: "Module",
@@ -34,7 +37,9 @@ const SCHEMA_CONFIG = {
       type: "string",
       required: true,
       examples: ["tradelicence", "propertytax", "watercharge"],
-      documentation: "The module name identifies the specific service module. This is a required field that must be a string value."
+      documentation: "The module name identifies the specific service module. This is a required field that must be a string value.",
+      preConfigured: false,
+      generationLogic: null
     },
     service: {
       name: "Service",
@@ -42,7 +47,9 @@ const SCHEMA_CONFIG = {
       type: "string", 
       required: true,
       examples: ["TradeLicense", "PropertyTax", "WaterCharge"],
-      documentation: "The service name defines the specific service being configured. This is a required field that must be a string value."
+      documentation: "The service name defines the specific service being configured. This is a required field that must be a string value.",
+      preConfigured: false,
+      generationLogic: null
     },
     fields: {
       name: "Fields",
@@ -57,7 +64,18 @@ const SCHEMA_CONFIG = {
           "required": true
         }
       ],
-      documentation: "Defines the form fields that will be displayed to users. Each field can have validation rules, display properties, and data types."
+      documentation: "Defines the form fields that will be displayed to users. Each field can have validation rules, display properties, and data types.",
+      preConfigured: false,
+      generationLogic: {
+        type: "array",
+        description: "Generate array of field objects from guided question answers",
+        logic: {
+          fieldCount: "number of fields to generate",
+          fieldNames: "comma-separated field names",
+          fieldTypes: "array of field types",
+          output: "Array of field objects with name, label, type, required properties"
+        }
+      }
     },
     idgen: {
       name: "ID Generation",
@@ -70,7 +88,9 @@ const SCHEMA_CONFIG = {
           "sequence": "0001"
         }
       ],
-      documentation: "Configures how unique identifiers are generated for service records. Supports various patterns and sequences."
+      documentation: "Configures how unique identifiers are generated for service records. Supports various patterns and sequences.",
+      preConfigured: false,
+      generationLogic: null
     },
     workflow: {
       name: "Workflow",
@@ -93,7 +113,15 @@ const SCHEMA_CONFIG = {
           ]
         }
       ],
-      documentation: "Defines the workflow states and transitions for the service. Controls the business process flow and user actions."
+      documentation: "Defines the workflow states and transitions for the service. Controls the business process flow and user actions.",
+      preConfigured: true,
+      preConfigTemplate: {
+        business: "${service}",
+        businessService: "${service}",
+        businessServiceSla: "72",
+        states: []
+      },
+      generationLogic: null
     },
     bill: {
       name: "Billing",
@@ -102,33 +130,53 @@ const SCHEMA_CONFIG = {
       required: false,
       examples: [
         {
+          "BusinessService": "TradeLicense",
           "taxHead": [
             {
               "code": "TL_FEE",
               "name": "Trade License Fee",
-              "isRequired": true
+              "amount": 1000
+            }
+          ],
+          "taxPeriod": [
+            {
+              "from": "01-04-2024",
+              "to": "31-03-2025"
             }
           ]
         }
       ],
-      documentation: "Configures billing components including tax heads, payment periods, and business services."
+      documentation: "Configures billing and payment settings for the service. Includes tax heads, periods, and fee calculations.",
+      preConfigured: true,
+      preConfigTemplate: {
+        BusinessService: "${service}",
+        taxHead: [],
+        taxPeriod: []
+      },
+      generationLogic: null
     },
     payment: {
       name: "Payment",
-      description: "Payment gateway settings and configuration",
+      description: "Payment gateway and transaction settings",
       type: "object",
       required: false,
       examples: [
         {
           "gateway": "PAYTM",
-          "merchantId": "MERCHANT123"
+          "merchantId": "MERCHANT123",
+          "supportedModes": ["CARD", "UPI", "NETBANKING"]
         }
       ],
-      documentation: "Defines payment gateway integration settings and merchant configurations."
+      documentation: "Configures payment gateway integration and transaction processing settings.",
+      preConfigured: true,
+      preConfigTemplate: {
+        gateway: "PAYTM"
+      },
+      generationLogic: null
     },
     access: {
       name: "Access Control",
-      description: "Access control and role-based permissions",
+      description: "User roles and permissions",
       type: "object",
       required: false,
       examples: [
@@ -140,7 +188,16 @@ const SCHEMA_CONFIG = {
           }
         }
       ],
-      documentation: "Configures role-based access control and permissions for different user types."
+      documentation: "Defines user roles, permissions, and access control settings for the service.",
+      preConfigured: true,
+      preConfigTemplate: {
+        roles: ["CITIZEN", "EMPLOYEE"],
+        permissions: {
+          "CITIZEN": ["CREATE", "VIEW"],
+          "EMPLOYEE": ["CREATE", "VIEW", "UPDATE", "DELETE"]
+        }
+      },
+      generationLogic: null
     },
     rules: {
       name: "Business Rules",
@@ -158,23 +215,35 @@ const SCHEMA_CONFIG = {
           ]
         }
       ],
-      documentation: "Defines business rules, validation logic, and custom calculations for the service."
+      documentation: "Defines business rules, validation logic, and custom calculations for the service.",
+      preConfigured: false,
+      generationLogic: {
+        type: "object",
+        description: "Generate business rules object from guided question answers",
+        logic: {
+          validationRules: "array of validation rule types",
+          fieldValidations: "comma-separated field names to validate",
+          output: "Object with validation array containing rule objects"
+        }
+      }
     },
     calculator: {
       name: "Calculator",
-      description: "Calculation logic and formulas",
+      description: "Fee calculation and formula logic",
       type: "object",
       required: false,
       examples: [
         {
           "formula": "baseAmount * taxRate",
           "variables": {
-            "baseAmount": "field.value",
-            "taxRate": 0.05
+            "baseAmount": "number",
+            "taxRate": "number"
           }
         }
       ],
-      documentation: "Configures calculation formulas and logic for fees, taxes, and other computations."
+      documentation: "Configures fee calculation formulas and mathematical operations for the service.",
+      preConfigured: false,
+      generationLogic: null
     },
     documents: {
       name: "Documents",
@@ -187,30 +256,45 @@ const SCHEMA_CONFIG = {
             {
               "name": "identityProof",
               "label": "Identity Proof",
-              "type": "file"
+              "type": "file",
+              "required": true
             }
           ]
         }
       ],
-      documentation: "Defines required documents, file types, and upload configurations for the service."
+      documentation: "Defines required documents, file types, and upload configurations for the service.",
+      preConfigured: false,
+      generationLogic: {
+        type: "object",
+        description: "Generate document configuration object from guided question answers",
+        logic: {
+          documentCount: "number of documents to generate",
+          documentNames: "comma-separated document names",
+          documentTypes: "array of document types",
+          mandatoryDocuments: "comma-separated mandatory document names",
+          output: "Object with required array containing document objects"
+        }
+      }
     },
     pdf: {
       name: "PDF Generation",
-      description: "PDF generation settings and templates",
+      description: "PDF certificate and document templates",
       type: "array",
       required: false,
       examples: [
         {
           "key": "certificate",
           "type": "certificate",
-          "states": ["APPROVED"]
+          "template": "certificate-template.html"
         }
       ],
-      documentation: "Configures PDF generation for certificates, receipts, and other documents."
+      documentation: "Configures PDF generation templates and certificate formats for the service.",
+      preConfigured: false,
+      generationLogic: null
     },
     applicant: {
       name: "Applicant",
-      description: "Applicant configuration and details",
+      description: "Applicant type and field configuration",
       type: "object",
       required: false,
       examples: [
@@ -219,11 +303,13 @@ const SCHEMA_CONFIG = {
           "fields": ["name", "mobile", "email"]
         }
       ],
-      documentation: "Defines applicant types and required applicant information fields."
+      documentation: "Configures applicant types and their associated fields for the service.",
+      preConfigured: false,
+      generationLogic: null
     },
     boundary: {
       name: "Boundary",
-      description: "Geographic boundaries and jurisdiction",
+      description: "Geographic boundaries and hierarchy",
       type: "object",
       required: false,
       examples: [
@@ -232,11 +318,17 @@ const SCHEMA_CONFIG = {
           "hierarchyType": "ADMIN"
         }
       ],
-      documentation: "Configures geographic boundaries, jurisdiction levels, and administrative hierarchies."
+      documentation: "Defines geographic boundaries and administrative hierarchy for the service.",
+      preConfigured: true,
+      preConfigTemplate: {
+        lowestLevel: "WARD",
+        hierarchyType: "ADMIN"
+      },
+      generationLogic: null
     },
     localization: {
       name: "Localization",
-      description: "Localization settings and translations",
+      description: "Language and regional settings",
       type: "object",
       required: false,
       examples: [
@@ -246,22 +338,40 @@ const SCHEMA_CONFIG = {
           "dateFormat": "DD/MM/YYYY"
         }
       ],
-      documentation: "Defines language settings, currency formats, and localization preferences."
+      documentation: "Configures language, currency, and regional settings for the service.",
+      preConfigured: true,
+      preConfigTemplate: {
+        language: "en_IN",
+        currency: "INR",
+        dateFormat: "DD/MM/YYYY"
+      },
+      generationLogic: null
     },
     notification: {
       name: "Notification",
-      description: "Notification settings and templates",
+      description: "Notification channels and templates",
       type: "object",
       required: false,
       examples: [
         {
           "channels": ["SMS", "EMAIL"],
           "templates": {
-            "SUBMISSION": "Your application has been submitted successfully."
+            "SUBMISSION": "Your application has been submitted successfully.",
+            "APPROVAL": "Your application has been approved."
           }
         }
       ],
-      documentation: "Configures notification channels, templates, and delivery settings."
+      documentation: "Configures notification channels, templates, and messaging settings for the service.",
+      preConfigured: true,
+      preConfigTemplate: {
+        channels: ["SMS", "EMAIL"],
+        templates: {
+          "SUBMISSION": "Your application has been submitted successfully.",
+          "APPROVAL": "Your application has been approved.",
+          "REJECTION": "Your application has been rejected."
+        }
+      },
+      generationLogic: null
     }
   }
 };
@@ -316,11 +426,31 @@ function getSectionDocumentation(sectionName) {
   return SCHEMA_CONFIG.sections[sectionName] || null;
 }
 
+// Get pre-configured sections
+function getPreConfiguredSections() {
+  return SCHEMA_CONFIG.preConfigured;
+}
+
+// Get generation logic for a section
+function getSectionGenerationLogic(sectionName) {
+  const section = SCHEMA_CONFIG.sections[sectionName];
+  return section ? section.generationLogic : null;
+}
+
+// Get pre-config template for a section
+function getSectionPreConfigTemplate(sectionName) {
+  const section = SCHEMA_CONFIG.sections[sectionName];
+  return section ? section.preConfigTemplate : null;
+}
+
 module.exports = {
   SCHEMA_CONFIG,
   loadMainSchema,
   getSectionSchema,
   getAvailableSections,
   getSectionOrder,
-  getSectionDocumentation
+  getSectionDocumentation,
+  getPreConfiguredSections,
+  getSectionGenerationLogic,
+  getSectionPreConfigTemplate
 }; 
