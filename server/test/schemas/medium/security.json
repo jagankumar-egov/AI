@@ -1,0 +1,87 @@
+{
+  "type": "object",
+  "description": "Security configuration settings",
+  "title": "Security Settings",
+  "required": true,
+  "examples": [
+    {
+      "authentication": {
+        "method": "oauth2",
+        "providers": ["google", "github"],
+        "sessionTimeout": 3600
+      },
+      "encryption": {
+        "algorithm": "AES-256",
+        "keyRotation": true
+      },
+      "permissions": {
+        "roles": ["user", "admin", "moderator"],
+        "defaultRole": "user"
+      }
+    }
+  ],
+  "documentation": {
+    "description": "Configure security settings including authentication, encryption, and permissions",
+    "helperText": "Set up authentication methods, encryption settings, and user permissions",
+    "required": true
+  },
+  "properties": {
+    "authentication": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["basic", "oauth2", "saml", "jwt"],
+          "description": "Authentication method"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["google", "github", "facebook", "microsoft"]
+          },
+          "description": "OAuth providers"
+        },
+        "sessionTimeout": {
+          "type": "number",
+          "minimum": 300,
+          "maximum": 86400,
+          "description": "Session timeout in seconds"
+        }
+      },
+      "required": ["method", "sessionTimeout"]
+    },
+    "encryption": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["AES-128", "AES-256", "RSA-2048", "RSA-4096"],
+          "description": "Encryption algorithm"
+        },
+        "keyRotation": {
+          "type": "boolean",
+          "description": "Enable automatic key rotation"
+        }
+      },
+      "required": ["algorithm"]
+    },
+    "permissions": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "description": "Available user roles"
+        },
+        "defaultRole": {
+          "type": "string",
+          "description": "Default role for new users"
+        }
+      },
+      "required": ["roles", "defaultRole"]
+    }
+  },
+  "required": ["authentication", "encryption", "permissions"]
+} 

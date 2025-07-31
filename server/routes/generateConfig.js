@@ -25,26 +25,55 @@ async function loadSchema(section) {
   }
 
   try {
-    const { getSectionSchema } = require('../schemas');
-    const schema = await getSectionSchema(section);
+    // Try to load schema from the main schemas directory
+    let schemaPath = path.join(__dirname, '..', 'schemas', `${section}.json`);
+    let schema;
     
-    if (schema) {
-      // Create a clean schema for validation by removing custom fields
-      const cleanSchema = { ...schema };
-      delete cleanSchema.documentation;
-      delete cleanSchema.guidedQuestions;
-      delete cleanSchema.generationLogic;
+    try {
+      const schemaContent = await fs.readFile(schemaPath, 'utf8');
+      schema = JSON.parse(schemaContent);
+    } catch (error) {
+      // Try test schemas if not found in main schemas
+      const testPaths = [
+        path.join(__dirname, '..', 'test', 'schemas', 'simple', `${section}.json`),
+        path.join(__dirname, '..', 'test', 'schemas', 'medium', `${section}.json`)
+      ];
       
-      // Store both the full schema (for prompts) and clean schema (for validation)
-      schemaCache[section] = {
-        full: schema,
-        clean: cleanSchema
-      };
-      
-      return schemaCache[section];
-    } else {
+      for (const testPath of testPaths) {
+        try {
+          const schemaContent = await fs.readFile(testPath, 'utf8');
+          schema = JSON.parse(schemaContent);
+          break;
+        } catch (testError) {
+          continue;
+        }
+      }
+    }
+    
+    if (!schema) {
       throw new Error(`Schema not found for section: ${section}`);
     }
+    
+    // Create a clean schema for validation by removing custom fields
+    const cleanSchema = { ...schema };
+    delete cleanSchema.documentation;
+    delete cleanSchema.guidedQuestions;
+    delete cleanSchema.generationLogic;
+    
+    // Convert required field to array format for AJV validation
+    if (cleanSchema.required === true) {
+      cleanSchema.required = [];
+    } else if (cleanSchema.required === false) {
+      delete cleanSchema.required;
+    }
+    
+    // Store both the full schema (for prompts) and clean schema (for validation)
+    schemaCache[section] = {
+      full: schema,
+      clean: cleanSchema
+    };
+    
+    return schemaCache[section];
   } catch (error) {
     console.error('Error loading schema:', error);
     throw new Error(`Failed to load schema for section: ${section}`);

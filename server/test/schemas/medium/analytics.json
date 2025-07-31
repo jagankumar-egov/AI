@@ -1,0 +1,94 @@
+{
+  "type": "object",
+  "description": "Analytics and tracking configuration",
+  "title": "Analytics Settings",
+  "required": false,
+  "examples": [
+    {
+      "tracking": {
+        "enabled": true,
+        "providers": ["google-analytics", "mixpanel"],
+        "privacyMode": "anonymized"
+      },
+      "metrics": {
+        "userBehavior": true,
+        "performance": true,
+        "errors": true
+      },
+      "retention": {
+        "period": 90,
+        "unit": "days"
+      }
+    }
+  ],
+  "documentation": {
+    "description": "Configure analytics tracking, metrics collection, and data retention",
+    "helperText": "Set up analytics providers, tracking preferences, and data retention policies",
+    "required": false
+  },
+  "properties": {
+    "tracking": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable analytics tracking"
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["google-analytics", "mixpanel", "amplitude", "hotjar"]
+          },
+          "description": "Analytics providers"
+        },
+        "privacyMode": {
+          "type": "string",
+          "enum": ["full", "anonymized", "minimal"],
+          "default": "anonymized",
+          "description": "Privacy tracking mode"
+        }
+      },
+      "required": ["enabled"]
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "userBehavior": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track user behavior"
+        },
+        "performance": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track performance metrics"
+        },
+        "errors": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track error rates"
+        }
+      }
+    },
+    "retention": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 365,
+          "description": "Data retention period"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["days", "months", "years"],
+          "default": "days",
+          "description": "Retention period unit"
+        }
+      },
+      "required": ["period"]
+    }
+  }
+} 

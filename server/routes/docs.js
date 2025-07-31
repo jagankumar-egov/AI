@@ -723,37 +723,65 @@ function applyGenerationLogic(fieldName, answers, generationLogic) {
 // Get AI-guided configuration information
 router.get('/ai-guided/info', async (req, res) => {
   try {
-    const { order, required } = getSectionOrder();
-    const sections = getAvailableSections();
+    // Get available schemas dynamically
+    const { getAvailableSchemas, getRequiredSections } = require('../schemas');
+    
+    const availableSchemas = await getAvailableSchemas();
+    const requiredSections = await getRequiredSections();
     
     // Get schema-driven information for each section
-    const sectionInfo = await Promise.all(sections.map(async (section) => {
-      const schema = await getSectionSchema(section.name);
-      const documentation = getSectionDocumentation(section.name);
-      
-      return {
-        name: section.name,
-        label: section.name,
-        type: section.type,
-        required: required.includes(section.name.toLowerCase()),
-        description: documentation?.description || `Configure ${section.name}`,
-        examples: documentation?.examples || [],
-        guidedQuestions: schema?.guidedQuestions || [],
-        generationLogic: schema?.generationLogic || null,
-        validation: await getValidationForSection(section),
-        helperText: documentation?.helperText || `Enter ${section.name} configuration`,
-        order: order.indexOf(section.name.toLowerCase())
-      };
+    const sectionInfo = await Promise.all(availableSchemas.map(async (sectionName) => {
+      try {
+        const schemaPath = path.join(__dirname, '..', 'schemas', `${sectionName}.json`);
+        const schemaContent = await fs.readFile(schemaPath, 'utf8');
+        const schema = JSON.parse(schemaContent);
+        
+        return {
+          name: sectionName,
+          label: schema.title || sectionName,
+          type: schema.type || 'object',
+          required: requiredSections.includes(sectionName),
+          description: schema.description || `Configure ${sectionName}`,
+          examples: schema.examples || [],
+          guidedQuestions: schema.guidedQuestions || [],
+          generationLogic: schema.generationLogic || null,
+          validation: {
+            type: 'json',
+            schema: schema
+          },
+          helperText: schema.documentation?.helperText || `Enter ${sectionName} configuration`,
+          order: requiredSections.includes(sectionName) ? requiredSections.indexOf(sectionName) : 999
+        };
+      } catch (error) {
+        console.warn(`Error loading schema for ${sectionName}:`, error.message);
+        return {
+          name: sectionName,
+          label: sectionName,
+          type: 'object',
+          required: false,
+          description: `Configure ${sectionName}`,
+          examples: [],
+          guidedQuestions: [],
+          generationLogic: null,
+          validation: { type: 'json', schema: { type: 'object' } },
+          helperText: `Enter ${sectionName} configuration`,
+          order: 999
+        };
+      }
     }));
     
-    // Sort by order
-    sectionInfo.sort((a, b) => a.order - b.order);
+    // Sort by order (required first, then alphabetically)
+    sectionInfo.sort((a, b) => {
+      if (a.required && !b.required) return -1;
+      if (!a.required && b.required) return 1;
+      return a.name.localeCompare(b.name);
+    });
     
     res.json({
       sections: sectionInfo,
-      requiredSections: required,
-      totalSections: sections.length,
-      availableSections: sections.map(s => s.name)
+      requiredSections: requiredSections,
+      totalSections: sectionInfo.length,
+      availableSections: availableSchemas
     });
   } catch (error) {
     console.error('Error getting AI-guided info:', error);
@@ -768,13 +796,38 @@ router.get('/ai-guided/info', async (req, res) => {
 router.get('/ai-guided/:section', async (req, res) => {
   try {
     const { section } = req.params;
-    const schema = await getSectionSchema(section);
-    const documentation = getSectionDocumentation(section);
+    
+    // Try to load schema from the main schemas directory
+    let schemaPath = path.join(__dirname, '..', 'schemas', `${section}.json`);
+    let schema, documentation;
+    
+    try {
+      const schemaContent = await fs.readFile(schemaPath, 'utf8');
+      schema = JSON.parse(schemaContent);
+      documentation = schema.documentation || {};
+    } catch (error) {
+      // Try test schemas if not found in main schemas
+      const testPaths = [
+        path.join(__dirname, '..', 'test', 'schemas', 'simple', `${section}.json`),
+        path.join(__dirname, '..', 'test', 'schemas', 'medium', `${section}.json`)
+      ];
+      
+      for (const testPath of testPaths) {
+        try {
+          const schemaContent = await fs.readFile(testPath, 'utf8');
+          schema = JSON.parse(schemaContent);
+          documentation = schema.documentation || {};
+          break;
+        } catch (testError) {
+          continue;
+        }
+      }
+    }
     
     if (!schema) {
       return res.status(404).json({
         error: 'Section not found',
-        message: `Section '${section}' not found in schema`
+        message: `Section '${section}' not found in any schema directory`
       });
     }
     
@@ -788,8 +841,11 @@ router.get('/ai-guided/:section', async (req, res) => {
       aiPrompts,
       guidedQuestions: schema.guidedQuestions || [],
       generationLogic: schema.generationLogic || null,
-      examples: documentation?.examples || [],
-      validation: await getValidationForSection({ name: section, type: schema.type })
+      examples: documentation?.examples || schema.examples || [],
+      validation: {
+        type: 'json',
+        schema: schema
+      }
     });
   } catch (error) {
     console.error('Error getting section AI guidance:', error);

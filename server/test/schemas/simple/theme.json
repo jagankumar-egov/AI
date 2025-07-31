@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "description": "Application theme configuration",
+  "title": "Theme Settings",
+  "required": false,
+  "examples": [
+    {
+      "colorScheme": "dark",
+      "fontSize": "medium",
+      "animations": true
+    }
+  ],
+  "documentation": {
+    "description": "Configure application theme and appearance",
+    "helperText": "Set color scheme, font size, and animation preferences",
+    "required": false
+  },
+  "properties": {
+    "colorScheme": {
+      "type": "string",
+      "enum": ["light", "dark", "auto"],
+      "default": "light",
+      "description": "Application color scheme"
+    },
+    "fontSize": {
+      "type": "string",
+      "enum": ["small", "medium", "large"],
+      "default": "medium",
+      "description": "Font size preference"
+    },
+    "animations": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable or disable animations"
+    },
+    "customColors": {
+      "type": "object",
+      "properties": {
+        "primary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+        "secondary": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+      },
+      "description": "Custom color overrides"
+    }
+  }
+} 

@@ -1,24 +1,15 @@
 {
   "type": "string",
-  "description": "Module identifier for the service",
+  "description": "Module configuration for the service",
   "title": "Module Configuration",
-  "pattern": "^[a-z]+$",
-  "minLength": 1,
-  "maxLength": 50,
-  "examples": [
-    "tradelicence",
-    "propertytax",
-    "watertax",
-    "seweragetax"
-  ],
+  "required": true,
+  "examples": ["tradelicense", "propertytax", "watercharge"],
   "documentation": {
-    "description": "The module identifier that groups related services together.",
-    "usage": "Enter a lowercase module name without spaces or special characters.",
-    "examples": [
-      "tradelicence",
-      "propertytax",
-      "watertax"
-    ],
-    "helperText": "Enter the module name (e.g., tradelicence, propertytax)"
-  }
+    "description": "The module name identifies the specific service module",
+    "helperText": "Enter the module name (lowercase, no spaces)",
+    "required": true
+  },
+  "pattern": "^[a-z]+$",
+  "minLength": 3,
+  "maxLength": 20
 } 

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "description": "User profile configuration",
+  "title": "User Profile",
+  "required": true,
+  "examples": [
+    {
+      "profileType": "individual",
+      "ageRange": "18-25",
+      "preferences": ["notifications", "privacy"]
+    }
+  ],
+  "documentation": {
+    "description": "Configure user profile settings and preferences",
+    "helperText": "Define user profile type and preferences",
+    "required": true
+  },
+  "properties": {
+    "profileType": {
+      "type": "string",
+      "enum": ["individual", "business", "admin"],
+      "description": "Type of user profile"
+    },
+    "ageRange": {
+      "type": "string",
+      "pattern": "^[0-9]+-[0-9]+$",
+      "description": "Age range in format min-max"
+    },
+    "preferences": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["notifications", "privacy", "accessibility", "language"]
+      },
+      "description": "User preferences list"
+    }
+  },
+  "required": ["profileType", "preferences"]
+} 
