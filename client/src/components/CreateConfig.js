@@ -1,31 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
   Typography,
   TextField,
   Button,
-  Grid,
-  Card,
-  CardContent,
   Stepper,
   Step,
   StepLabel,
   StepContent,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  CircularProgress,
-  Alert,
+  Grid,
+  Card,
+  CardContent,
   Switch,
   FormControlLabel,
+  Alert,
+  CircularProgress,
   Chip,
+  Divider
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useConfigStore } from '../stores/configStore';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { configAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import MonacoEditor from './MonacoEditor';
@@ -604,27 +600,12 @@ const CreateConfig = () => {
 
   const generateJsonFromAnswers = async (fieldName, questions, answers) => {
     try {
-      // Call server endpoint to generate JSON from guided questions
-      const response = await fetch('/api/docs/generate-json', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fieldName,
-          answers,
-          questions
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to generate JSON from server');
-      }
-      
-      const data = await response.json();
-      return data.generatedJson;
+      // Use centralized axios API instead of fetch
+      const data = await configAPI.generateJsonFromGuidedQuestions(fieldName, answers, questions);
+      return data.generatedJson || {};
     } catch (error) {
       console.error('Error generating JSON from guided questions:', error);
+      toast.error('Failed to generate JSON from guided questions');
       return {};
     }
   };

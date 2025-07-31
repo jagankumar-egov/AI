@@ -519,11 +519,13 @@ module.exports = {
   
   // Legacy exports for backward compatibility
   get SECTION_ORDER() {
-    return getSectionOrder();
+    // Return a promise for async function
+    return getSectionOrder().catch(() => []);
   },
   
   get REQUIRED_SECTIONS() {
-    return getRequiredSections();
+    // Return a promise for async function
+    return getRequiredSections().catch(() => []);
   },
   
   // Other exports remain the same

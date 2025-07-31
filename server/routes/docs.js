@@ -25,18 +25,17 @@ async function generateCreationSteps(sections, requiredSections) {
   
   // Get all required sections from schema
   for (const sectionName of requiredSections) {
-    // Find section by name (case-insensitive)
-    const section = sections.find(s => s.name.toLowerCase() === sectionName.toLowerCase());
-    if (section) {
-      const fieldType = getFieldTypeForSection(section);
-      const validation = await getValidationForSection(section);
+    // Check if section exists in available sections
+    if (sections.includes(sectionName)) {
+      const fieldType = getFieldTypeForSection({ name: sectionName, type: 'string' });
+      const validation = await getValidationForSection({ name: sectionName, type: 'string' });
       
       requiredFields.push({
         name: sectionName,
-        label: section.name,
+        label: sectionName,
         type: fieldType,
         required: true,
-        helperText: section.documentation || `Enter the ${section.name} value`,
+        helperText: `Enter the ${sectionName} value`,
         validation: validation
       });
     }
@@ -54,22 +53,21 @@ async function generateCreationSteps(sections, requiredSections) {
   const optionalFields = [];
   
   // Get all non-required sections that can be configured initially
-  const optionalSections = sections.filter(section => {
-    const sectionNameLower = section.name.toLowerCase();
-    return !requiredSections.includes(sectionNameLower) && 
-           (section.type === 'string' || section.type === 'object'); // Include both string and object types
+  const optionalSections = sections.filter(sectionName => {
+    return !requiredSections.includes(sectionName) && 
+           sectionName !== 'index'; // Exclude index file
   });
   
-  for (const section of optionalSections) {
-    const fieldType = getFieldTypeForSection(section);
-    const validation = await getValidationForSection(section);
+  for (const sectionName of optionalSections) {
+    const fieldType = getFieldTypeForSection({ name: sectionName, type: 'string' });
+    const validation = await getValidationForSection({ name: sectionName, type: 'string' });
     
     optionalFields.push({
-      name: section.name.toLowerCase(),
-      label: section.name,
+      name: sectionName.toLowerCase(),
+      label: sectionName,
       type: fieldType,
-      required: section.required || false,
-      helperText: section.documentation || `Configure ${section.name}`,
+      required: false,
+      helperText: `Configure ${sectionName}`,
       validation: validation,
       isOptional: true, // Mark as optional for UI
       schema: validation.schema, // Include schema for guided questions
@@ -246,60 +244,48 @@ function getFieldTypeForSection(section) {
 
 // Function to generate pre-configured sections based on schema
 function generatePreConfiguredSections(sections, requiredSections) {
-  const preConfiguredSections = {};
-  const preConfiguredSectionNames = getPreConfiguredSections();
+  const preConfigured = [];
   
-  // Get non-required sections that should be pre-configured
-  const sectionsToPreConfigure = sections.filter(section => {
-    const sectionNameLower = section.name.toLowerCase();
-    return !requiredSections.includes(sectionNameLower) && 
-           preConfiguredSectionNames.includes(sectionNameLower);
-  });
-  
-  sectionsToPreConfigure.forEach(section => {
-    const sectionNameLower = section.name.toLowerCase();
-    const preConfigTemplate = getSectionPreConfigTemplate(sectionNameLower);
-    
-    if (preConfigTemplate) {
-      // Use the section name as the key (not the mapped name)
-      preConfiguredSections[sectionNameLower] = preConfigTemplate;
+  // Add required sections as pre-configured
+  for (const sectionName of requiredSections) {
+    if (sections.includes(sectionName)) {
+      preConfigured.push({
+        name: sectionName,
+        label: sectionName,
+        type: 'string',
+        required: true,
+        enabled: true,
+        helperText: `Configure ${sectionName} (required)`
+      });
     }
-  });
+  }
   
-  return preConfiguredSections;
+  return preConfigured;
 }
 
-// Function to generate information cards based on schema
+// Generate information cards based on schema
 function generateInformationCards(sections, requiredSections, preConfiguredSections) {
-  const preConfiguredItems = Object.keys(preConfiguredSections).map(sectionName => {
-    // Get section documentation for display name
-    const sectionDoc = getSectionDocumentation(sectionName);
-    const displayName = sectionDoc ? sectionDoc.name : sectionName;
-    return `${displayName} - Pre-configured section`;
-  });
-
-  const availableItems = sections
-    .filter(section => {
-      const sectionNameLower = section.name.toLowerCase();
-      return !requiredSections.includes(sectionNameLower) && 
-             !Object.keys(preConfiguredSections).some(key => 
-               sectionNameLower.includes(key.toLowerCase())
-             );
-    })
-    .map(section => `${section.name} - ${section.description}`);
-
-  return {
-    preConfigured: {
-      title: 'Pre-configured Sections',
-      description: 'The following sections will be pre-configured:',
-      items: preConfiguredItems
-    },
-    available: {
-      title: 'Available Sections',
-      description: 'You can configure these additional sections:',
-      items: availableItems
-    }
-  };
+  const cards = [];
+  
+  // Create cards for all available sections
+  for (const sectionName of sections) {
+    if (sectionName === 'index') continue; // Skip index file
+    
+    const isRequired = requiredSections.includes(sectionName);
+    const isPreConfigured = preConfiguredSections.some(pc => pc.name === sectionName);
+    
+    cards.push({
+      title: sectionName,
+      description: `Configure ${sectionName} settings`,
+      type: isRequired ? 'required' : 'optional',
+      status: isPreConfigured ? 'pre-configured' : 'available',
+      helperText: isRequired ? 
+        `This section is required for the configuration` : 
+        `This section is optional and can be configured later`
+    });
+  }
+  
+  return cards;
 }
 
 async function loadSchemaDocs() {
@@ -459,24 +445,27 @@ router.get('/', async (req, res) => {
 // Get configuration creation requirements (must be before /:section route)
 router.get('/create-requirements', async (req, res) => {
   try {
-    const { order, required } = getSectionOrder();
-    const sections = getAvailableSections();
+    // Get available schemas dynamically
+    const { getAvailableSchemas, getRequiredSections } = require('../schemas');
+    
+    const availableSchemas = await getAvailableSchemas();
+    const requiredSections = await getRequiredSections();
     
     // Generate creation steps dynamically based on schema
-    const creationSteps = await generateCreationSteps(sections, required);
+    const creationSteps = await generateCreationSteps(availableSchemas, requiredSections);
 
     // Generate pre-configured sections based on schema
-    const preConfiguredSections = generatePreConfiguredSections(sections, required);
+    const preConfiguredSections = generatePreConfiguredSections(availableSchemas, requiredSections);
 
     // Generate information cards based on schema
-    const informationCards = generateInformationCards(sections, required, preConfiguredSections);
+    const informationCards = generateInformationCards(availableSchemas, requiredSections, preConfiguredSections);
 
     res.json({
       steps: creationSteps,
       preConfiguredSections,
       informationCards,
-      requiredSections: required,
-      availableSections: sections.map(s => s.name)
+      requiredSections: requiredSections,
+      availableSections: availableSchemas
     });
   } catch (error) {
     console.error('Error getting creation requirements:', error);
