@@ -1,0 +1,77 @@
+{
+  "type": "object",
+  "description": "Medium complexity workflow configuration",
+  "title": "Workflow",
+  "required": false,
+  "examples": [
+    {
+      "states": [
+        {
+          "state": "DRAFT",
+          "isStartState": true,
+          "actions": [
+            {
+              "action": "SUBMIT",
+              "nextState": "REVIEW",
+              "roles": ["USER"]
+            }
+          ]
+        },
+        {
+          "state": "REVIEW",
+          "isStartState": false,
+          "actions": [
+            {
+              "action": "APPROVE",
+              "nextState": "APPROVED",
+              "roles": ["ADMIN"]
+            },
+            {
+              "action": "REJECT",
+              "nextState": "DRAFT",
+              "roles": ["ADMIN"]
+            }
+          ]
+        },
+        {
+          "state": "APPROVED",
+          "isStartState": false,
+          "isTerminateState": true,
+          "actions": []
+        }
+      ]
+    }
+  ],
+  "documentation": {
+    "description": "Medium complexity workflow with states and actions",
+    "helperText": "Define workflow states and transitions",
+    "required": false
+  },
+  "properties": {
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "state": { "type": "string" },
+          "isStartState": { "type": "boolean" },
+          "isTerminateState": { "type": "boolean" },
+          "actions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "action": { "type": "string" },
+                "nextState": { "type": "string" },
+                "roles": { "type": "array", "items": { "type": "string" } }
+              },
+              "required": ["action", "nextState", "roles"]
+            }
+          }
+        },
+        "required": ["state", "isStartState", "actions"]
+      }
+    }
+  },
+  "required": ["states"]
+} 

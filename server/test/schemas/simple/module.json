@@ -1,0 +1,15 @@
+{
+  "type": "string",
+  "description": "Simple module configuration",
+  "title": "Module",
+  "required": true,
+  "examples": ["simpleapp", "basicapp", "testapp"],
+  "documentation": {
+    "description": "Basic module name for simple applications",
+    "helperText": "Enter a simple module name (letters only, no spaces)",
+    "required": true
+  },
+  "pattern": "^[a-z]+$",
+  "minLength": 3,
+  "maxLength": 20
+} 

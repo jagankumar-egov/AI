@@ -1,0 +1,15 @@
+{
+  "type": "string",
+  "description": "Simple service configuration",
+  "title": "Service",
+  "required": true,
+  "examples": ["SimpleApp", "BasicApp", "TestApp"],
+  "documentation": {
+    "description": "Basic service name for simple applications",
+    "helperText": "Enter a simple service name (PascalCase)",
+    "required": true
+  },
+  "pattern": "^[A-Z][a-zA-Z]+$",
+  "minLength": 3,
+  "maxLength": 20
+} 

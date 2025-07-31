@@ -1,0 +1,15 @@
+{
+  "type": "string",
+  "description": "Medium complexity module configuration",
+  "title": "Module",
+  "required": true,
+  "examples": ["ecommerce", "blogplatform", "taskmanager"],
+  "documentation": {
+    "description": "Module name for medium complexity applications",
+    "helperText": "Enter a module name (lowercase, can include hyphens)",
+    "required": true
+  },
+  "pattern": "^[a-z][a-z0-9-]*$",
+  "minLength": 3,
+  "maxLength": 30
+} 

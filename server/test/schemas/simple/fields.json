@@ -1,0 +1,37 @@
+{
+  "type": "array",
+  "description": "Simple form fields configuration",
+  "title": "Fields",
+  "required": true,
+  "examples": [
+    [
+      {
+        "name": "name",
+        "label": "Name",
+        "type": "text",
+        "required": true
+      },
+      {
+        "name": "email",
+        "label": "Email",
+        "type": "email",
+        "required": true
+      }
+    ]
+  ],
+  "documentation": {
+    "description": "Basic form fields for simple applications",
+    "helperText": "Define simple form fields like name and email",
+    "required": true
+  },
+  "items": {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string" },
+      "label": { "type": "string" },
+      "type": { "type": "string", "enum": ["text", "email", "number"] },
+      "required": { "type": "boolean" }
+    },
+    "required": ["name", "label", "type"]
+  }
+} 

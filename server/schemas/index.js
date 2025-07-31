@@ -492,11 +492,30 @@ function getSectionPreConfigTemplate(sectionName) {
   return section ? section.preConfigTemplate : null;
 }
 
+// Get guided questions for a section
+function getSectionGuidedQuestions(sectionName) {
+  const section = SCHEMA_CONFIG.sections[sectionName];
+  return section ? section.guidedQuestions : null;
+}
+
+// Get validation for a section
+function getSectionValidation(sectionName) {
+  const section = SCHEMA_CONFIG.sections[sectionName];
+  return section ? section.validation : null;
+}
+
+// Get helper text for a section
+function getSectionHelperText(sectionName) {
+  const section = SCHEMA_CONFIG.sections[sectionName];
+  return section ? section.helperText : null;
+}
+
 module.exports = {
   // Dynamic section management
   getRequiredSections,
   getSectionOrder,
   getAvailableSchemas,
+  getAvailableSections: getAvailableSchemas, // Alias for compatibility
   
   // Legacy exports for backward compatibility
   get SECTION_ORDER() {
@@ -513,8 +532,8 @@ module.exports = {
   getSectionPreConfigTemplate,
   getSectionDocumentation,
   getSectionSchema,
-  // getSectionGuidedQuestions,
-  // getSectionValidation,
-  // getSectionHelperText,
+  getSectionGuidedQuestions,
+  getSectionValidation,
+  getSectionHelperText,
   SCHEMA_CONFIG
 }; 
