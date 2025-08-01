@@ -88,45 +88,90 @@ const UnifiedConfigCreator = () => {
     (data) => configAPI.generateAIGuidedConfig(data.section, data.details, data.context),
     {
       onSuccess: (data) => {
-        const aiMessage = {
-          id: Date.now(),
-          type: 'ai',
-          content: `Perfect! I've generated the ${data.section} configuration based on your requirements. Here's what I created:`,
-          config: data.config,
-          section: data.section,
-          timestamp: new Date().toISOString(),
-        };
-        addChatMessage(aiMessage);
-        updateSection(data.section, data.config);
-        
-        // Update section progress
-        setSectionProgress(prev => ({
-          ...prev,
-          [data.section]: 'completed'
-        }));
-        
-        setIsTyping(false);
-        toast.success(`${data.section} configuration generated successfully!`);
-        
-        // Show next step suggestions
-        if (data.suggestions && data.suggestions.length > 0) {
-          const suggestionMessage = {
-            id: Date.now() + 1,
+        // Handle different response types
+        if (data.success === false) {
+          // Conversational response (clarification needed, help, etc.)
+          const aiMessage = {
+            id: Date.now(),
             type: 'ai',
-            content: `Great! Here are some suggestions for what to configure next:\n\n${data.suggestions.map(s => `• ${s}`).join('\n')}`,
+            content: data.message,
+            section: data.section,
             timestamp: new Date().toISOString(),
           };
-          addChatMessage(suggestionMessage);
+          addChatMessage(aiMessage);
+          setIsTyping(false);
+          
+          if (data.type === 'clarification_needed') {
+            toast('AI needs more information', { icon: '💬' });
+          } else if (data.type === 'conversational_response') {
+            toast('AI provided guidance', { icon: '💡' });
+          }
+        } else {
+          // Successful configuration generation
+          const isDefaultConfig = data.context?.useDefault || data.config?.isDefault;
+          const aiMessage = {
+            id: Date.now(),
+            type: 'ai',
+            content: isDefaultConfig 
+              ? `✅ Applied default configuration for ${data.section}. Moving to the next step...`
+              : `Perfect! I've generated the ${data.section} configuration based on your requirements. Here's what I created:`,
+            config: data.config,
+            section: data.section,
+            timestamp: new Date().toISOString(),
+          };
+          addChatMessage(aiMessage);
+          updateSection(data.section, data.config);
+          
+          // Update section progress
+          setSectionProgress(prev => ({
+            ...prev,
+            [data.section]: 'completed'
+          }));
+          
+          setIsTyping(false);
+          toast.success(isDefaultConfig ? `Default ${data.section} configuration applied!` : `${data.section} configuration generated successfully!`);
+          
+          // Show next step suggestions
+          if (data.suggestions && data.suggestions.length > 0) {
+            const suggestionMessage = {
+              id: Date.now() + 1,
+              type: 'ai',
+              content: `Great! Here are some suggestions for what to configure next:\n\n${data.suggestions.map(s => `• ${s}`).join('\n')}`,
+              timestamp: new Date().toISOString(),
+            };
+            addChatMessage(suggestionMessage);
+          }
+          
+          // Handle multi-attribute generation if applicable
+          if (data.multiAttributes && Object.keys(data.multiAttributes).length > 0) {
+            // Update multiple sections at once
+            Object.entries(data.multiAttributes).forEach(([sectionName, sectionConfig]) => {
+              updateSection(sectionName, sectionConfig);
+              setSectionProgress(prev => ({
+                ...prev,
+                [sectionName]: 'completed'
+              }));
+            });
+            
+            // Show multi-section completion message
+            const multiSectionMessage = {
+              id: Date.now() + 2,
+              type: 'ai',
+              content: `Perfect! I've configured multiple sections based on your input:\n\n${Object.keys(data.multiAttributes).map(section => `• ${section}: ${JSON.stringify(data.multiAttributes[section])}`).join('\n')}`,
+              timestamp: new Date().toISOString(),
+            };
+            addChatMessage(multiSectionMessage);
+          }
+          
+          // Move to next section
+          moveToNextSection(data.section);
         }
-        
-        // Move to next section
-        moveToNextSection(data.section);
       },
       onError: (error) => {
         const aiMessage = {
           id: Date.now(),
           type: 'ai',
-          content: `I'm sorry, I couldn't generate the configuration. ${error.message}. Could you please provide more specific details?`,
+          content: `I'm sorry, I encountered an issue. ${error.message}. Could you please try again with more specific details?`,
           timestamp: new Date().toISOString(),
         };
         addChatMessage(aiMessage);
@@ -241,6 +286,11 @@ What type of configuration do you want to create?`;
       section.name === completedSection
     );
     
+    // Count completed sections to determine progression behavior
+    const completedSectionsCount = Object.keys(sectionProgress).filter(section => 
+      sectionProgress[section] === 'completed'
+    ).length;
+    
     if (currentSectionIndex < aiGuidedInfo.sections.length - 1) {
       const nextSection = aiGuidedInfo.sections[currentSectionIndex + 1];
       
@@ -277,7 +327,31 @@ ${copyablePrompts.map((prompt, index) =>
 4. I'll generate the configuration for you`;
           }
           
-          let nextMessage = `Great! Now let's configure the **${nextSection.label}** section.
+          // Enhanced message based on completion count
+          let nextMessage = '';
+          
+          if (completedSectionsCount >= 2) {
+            // After 2+ steps completed, show focused next step
+            nextMessage = `✅ **${completedSectionsCount} sections completed!** 
+
+Now let's configure the **${nextSection.label}** section:
+
+${nextSection.description}
+
+${promptSection}
+
+**💡 Quick Options:**
+• Describe your specific requirements
+• Say "yes" or "ok" to proceed with sensible defaults
+• Say "keep it default" to use default settings and skip to next
+• Say "skip this section" to move to the next section
+
+**🎯 Example:** Try describing what you need for ${nextSection.label.toLowerCase()}
+
+What would you like to configure for ${nextSection.label}?`;
+          } else {
+            // First few steps - show full guidance
+            nextMessage = `Great! Now let's configure the **${nextSection.label}** section.
 
 ${nextSection.description}
 
@@ -286,11 +360,29 @@ ${promptSection}
 **🎯 Example:** Try describing what you need for ${nextSection.label.toLowerCase()}
 
 What would you like to configure for ${nextSection.label}?`;
+          }
 
           return nextMessage;
         } catch (error) {
           console.error('Error fetching section guidance:', error);
-          return `Great! Now let's configure the **${nextSection.label}** section.
+          
+          if (completedSectionsCount >= 2) {
+            return `✅ **${completedSectionsCount} sections completed!** 
+
+Now let's configure the **${nextSection.label}** section:
+
+${nextSection.description}
+
+**💡 Quick Options:**
+• Describe your specific requirements
+• Say "keep it default" to use default settings and skip to next
+• Say "skip this section" to move to the next section
+
+**🎯 Example:** Try describing what you need for ${nextSection.label.toLowerCase()}
+
+What would you like to configure for ${nextSection.label}?`;
+          } else {
+            return `Great! Now let's configure the **${nextSection.label}** section.
 
 ${nextSection.description}
 
@@ -303,6 +395,7 @@ ${nextSection.description}
 **🎯 Example:** Try describing what you need for ${nextSection.label.toLowerCase()}
 
 What would you like to configure for ${nextSection.label}?`;
+          }
         }
       };
       
@@ -367,6 +460,68 @@ Would you like me to show you the complete configuration or help you with anythi
         details: { prompt: message },
         context: context
       });
+    } else if (intent.type === 'multi_generate') {
+      // Handle multi-attribute generation
+      const context = {
+        currentSection: intent.sections[0], // Start with first section
+        completedSections: Object.keys(sectionProgress).filter(section => 
+          sectionProgress[section] === 'completed'
+        ),
+        existingConfig: config,
+        multiAttributes: intent.attributes
+      };
+      
+      generateMutation.mutate({
+        section: intent.sections[0],
+        details: { prompt: message },
+        context: context
+      });
+    } else if (intent.type === 'keep_default') {
+      // Handle keep default command
+      const context = {
+        currentSection: currentSection || intent.section,
+        completedSections: Object.keys(sectionProgress).filter(section => 
+          sectionProgress[section] === 'completed'
+        ),
+        existingConfig: config,
+        useDefault: true
+      };
+      
+      generateMutation.mutate({
+        section: currentSection || intent.section,
+        details: { prompt: 'use default configuration' },
+        context: context
+      });
+    } else if (intent.type === 'skip_section') {
+      // Handle skip section command
+      const skipMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: `✅ Skipped the current section. Moving to the next step...`,
+        timestamp: new Date().toISOString(),
+      };
+      addChatMessage(skipMessage);
+      
+      // Move to next section immediately
+      if (currentSection) {
+        moveToNextSection(currentSection);
+      }
+      setIsTyping(false);
+    } else if (intent.type === 'proceed_next') {
+      // Handle affirmative responses to proceed to next step
+      const proceedMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: `✅ Got it! Moving to the next step...`,
+        timestamp: new Date().toISOString(),
+      };
+      addChatMessage(proceedMessage);
+      
+      // Move to next section immediately
+      if (currentSection) {
+        moveToNextSection(currentSection);
+      }
+      setIsTyping(false);
     } else if (intent.type === 'help') {
       const helpMessage = {
         id: Date.now(),
@@ -377,16 +532,38 @@ Would you like me to show you the complete configuration or help you with anythi
       addChatMessage(helpMessage);
       setIsTyping(false);
     } else {
-      const aiMessage = {
-        id: Date.now(),
-        type: 'ai',
-        content: `I understand you want to configure something. Could you be more specific? For example:
+      // Enhanced fallback with context-aware suggestions
+      let fallbackMessage = '';
+      
+      if (currentSection) {
+        // If we have a current section, provide section-specific guidance
+        fallbackMessage = `I understand you want to configure the **${currentSection}** section. Could you be more specific? For example:
+
+• Describe what you need for ${currentSection.toLowerCase()}
+• Say "yes" or "ok" to proceed with sensible defaults
+• Say "keep it default" to use default settings
+• Say "skip this section" to move to the next step
+• Say "next" to proceed with current settings
+
+What would you like to configure for ${currentSection}?`;
+      } else {
+        // General guidance for unknown input
+        fallbackMessage = `I understand you want to configure something. Could you be more specific? For example:
+
 • "Create a workflow with DRAFT, REVIEW, and APPROVED states"
 • "Generate a form with name, email, and phone fields"
 • "Set up billing with tax calculation"
 • "Configure access control with different roles"
+• Say "yes" or "next" to proceed
+• Say "keep it default" to use default settings
 
-Or ask for help to see what I can do!`,
+Or ask for help to see what I can do!`;
+      }
+      
+      const aiMessage = {
+        id: Date.now(),
+        type: 'ai',
+        content: fallbackMessage,
         timestamp: new Date().toISOString(),
       };
       addChatMessage(aiMessage);
@@ -400,18 +577,101 @@ Or ask for help to see what I can do!`,
     // Use schema-driven section detection
     if (!aiGuidedInfo?.sections) return { type: 'unknown' };
     
+    // Enhanced multi-section detection
+    const detectedSections = [];
+    
     for (const section of aiGuidedInfo.sections) {
       const sectionName = section.name.toLowerCase();
       const sectionLabel = section.label.toLowerCase();
       
       if (lowerMessage.includes(sectionName) || lowerMessage.includes(sectionLabel)) {
-        return { type: 'generate', section: section.name };
+        detectedSections.push(section.name);
       }
     }
     
     // Check for help intent
     if (lowerMessage.includes('help') || lowerMessage.includes('what') || lowerMessage.includes('how')) {
       return { type: 'help' };
+    }
+    
+    // Check for affirmative responses and natural language commands
+    const affirmativePatterns = [
+      /^(yes|yeah|yep|ok|okay|fine|good|sure|alright|right|correct)$/i,
+      /^(yes|yeah|yep|ok|okay|fine|good|sure|alright|right|correct)\s+(fine|good|ok|okay|alright)$/i,
+      /^(yes|yeah|yep|ok|okay|fine|good|sure|alright|right|correct)\s+(next|proceed|continue|go|move)$/i,
+      /^(next|proceed|continue|go|move)\s+(step|section|ahead|forward)$/i,
+      /^(yes|yeah|yep|ok|okay|fine|good|sure|alright|right|correct)\s+(next|proceed|continue|go|move)\s+(step|section|ahead|forward)$/i
+    ];
+    
+    for (const pattern of affirmativePatterns) {
+      if (pattern.test(message)) {
+        return { type: 'proceed_next', section: currentSection || detectedSections[0] || 'current' };
+      }
+    }
+    
+    // Check for skip/keep default commands
+    if (lowerMessage.includes('keep it default') || lowerMessage.includes('use default') || lowerMessage.includes('default settings')) {
+      return { type: 'keep_default', section: detectedSections[0] || 'current' };
+    }
+    
+    if (lowerMessage.includes('skip this section') || lowerMessage.includes('skip section') || lowerMessage.includes('move to next')) {
+      return { type: 'skip_section', section: detectedSections[0] || 'current' };
+    }
+    
+    // Check for multi-attribute inputs (like "create a module called tradelicence and service as NewTl")
+    const multiAttributePatterns = [
+      /create\s+a\s+module\s+called\s+(\w+)\s+and\s+service\s+as\s+(\w+)/i,
+      /module\s+(\w+)\s+and\s+service\s+(\w+)/i,
+      /service\s+(\w+)\s+and\s+module\s+(\w+)/i
+    ];
+    
+    for (const pattern of multiAttributePatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        return { 
+          type: 'multi_generate', 
+          sections: ['module', 'service'],
+          attributes: {
+            module: match[1],
+            service: match[2]
+          }
+        };
+      }
+    }
+    
+    // Check for general configuration patterns
+    const configPatterns = [
+      /create\s+(\w+)/i,
+      /generate\s+(\w+)/i,
+      /set\s+up\s+(\w+)/i,
+      /configure\s+(\w+)/i
+    ];
+    
+    for (const pattern of configPatterns) {
+      const match = message.match(pattern);
+      if (match) {
+        const configType = match[1].toLowerCase();
+        for (const section of aiGuidedInfo.sections) {
+          if (configType.includes(section.name.toLowerCase()) || 
+              configType.includes(section.label.toLowerCase())) {
+            return { type: 'generate', section: section.name };
+          }
+        }
+      }
+    }
+    
+    // If multiple sections detected, prioritize required ones
+    if (detectedSections.length > 0) {
+      const requiredSections = detectedSections.filter(sectionName => {
+        const section = aiGuidedInfo.sections.find(s => s.name === sectionName);
+        return section && section.required;
+      });
+      
+      if (requiredSections.length > 0) {
+        return { type: 'generate', section: requiredSections[0] };
+      }
+      
+      return { type: 'generate', section: detectedSections[0] };
     }
     
     return { type: 'unknown' };
@@ -498,6 +758,11 @@ What would you like to configure?`;
       <Box sx={{ width: 300, p: 2 }}>
         <Typography variant="h6" gutterBottom>
           Configuration Progress
+          {Object.keys(sectionProgress).filter(section => sectionProgress[section] === 'completed').length >= 2 && (
+            <Typography variant="caption" display="block" color="success.main" sx={{ mt: 1 }}>
+              ✅ Quick mode enabled - After 2+ steps, you can use "keep it default" or "skip this section"
+            </Typography>
+          )}
         </Typography>
         
         <Stepper orientation="vertical" sx={{ mt: 2 }}>

@@ -41,6 +41,9 @@ cp server/env.example server/.env
 
 # Start development
 npm run dev  # Runs both frontend and backend
+
+# to test development
+node test/runTests.js
 ```
 
 ## 📁 Schema Structure
